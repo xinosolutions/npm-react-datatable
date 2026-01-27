@@ -1,0 +1,40 @@
+# Source files
+/src
+*.jsx
+*.js
+!build/**/*.js
+
+# Configuration files
+.babelrc
+.babelrc.js
+webpack.config.js
+.eslintrc*
+.prettierrc*
+
+# Development files
+node_modules/
+*.log
+*.lock
+.DS_Store
+.vscode/
+.idea/
+
+# Test files
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+__tests__/
+coverage/
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (keep README.md)
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Build artifacts (keep build/)
+*.map
