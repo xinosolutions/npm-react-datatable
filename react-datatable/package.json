@@ -1,6 +1,6 @@
 {
   "name": "@xinosolutions/react-datatable",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A modern, feature-rich React DataTable component with search, selection, and customizable columns",
   "main": "./build/index.js",
   "module": "./build/index.js",
@@ -10,8 +10,8 @@
   ],
   "scripts": {
     "copy-files": "node scripts/copy-files.js",
-    "build": "webpack --mode production",
-    "build:dev": "webpack --mode development",
+    "build": "webpack --mode production && node scripts/post-build.js",
+    "build:dev": "webpack --mode development && node scripts/post-build.js",
     "deploy": "node scripts/deploy.js",
     "prepublishOnly": "npm run build",
     "prepack": "npm run build",
