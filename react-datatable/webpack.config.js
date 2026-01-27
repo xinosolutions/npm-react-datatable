@@ -1,4 +1,5 @@
 var path = require("path");
+var { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
   mode: process.env.NODE_ENV || "production",
@@ -6,9 +7,11 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "index.js",
-    libraryTarget: "commonjs2",
-    clean: true
+    libraryTarget: "commonjs2"
   },
+  plugins: [
+    new CleanWebpackPlugin()
+  ],
   module: {
     rules: [
       {

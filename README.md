@@ -31,8 +31,8 @@ This repository serves two main purposes:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd react-datatable
+   git clone https://github.com/xinosolutions/npm-react-datatable.git
+   cd npm-react-datatable
    ```
 
 2. **Set up development environment**
@@ -121,8 +121,8 @@ MIT License - see LICENSE file for details
 ## 🔗 Links
 
 - [NPM Package](https://www.npmjs.com/package/@xinosolutions/react-datatable)
-- [GitHub Repository](https://github.com/xinosolutions/react-datatable)
-- [Issue Tracker](https://github.com/xinosolutions/react-datatable/issues)
+- [GitHub Repository](https://github.com/xinosolutions/npm-react-datatable)
+- [Issue Tracker](https://github.com/xinosolutions/npm-react-datatable/issues)
 
 ## 📞 Support
 

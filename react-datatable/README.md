@@ -118,4 +118,4 @@ MIT
 
 ## Support
 
-For issues and feature requests, please visit: [GitHub Issues](https://github.com/xinosolutions/react-datatable/issues)
+For issues and feature requests, please visit: [GitHub Issues](https://github.com/xinosolutions/npm-react-datatable/issues)

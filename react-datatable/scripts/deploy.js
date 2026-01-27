@@ -78,20 +78,19 @@ async function main() {
   console.log(`\n📋 Step 3: Current version: ${currentVersion}`);
   console.log(`📋 Step 3: Version type: ${versionType}`);
 
-  const proceed = await question('\n❓ Do you want to proceed with version bump? (y/n): ');
-  if (proceed.toLowerCase() !== 'y') {
-    console.log('❌ Deployment cancelled.');
-    rl.close();
-    process.exit(0);
+  const proceed = await question('\n❓ Do you want to bump the version? (y/n): ');
+  let newVersion = currentVersion;
+  
+  if (proceed.toLowerCase() === 'y') {
+    if (!execCommand(`npm version ${versionType}`, { cwd: path.join(__dirname, '..') })) {
+      console.error('❌ Version bump failed. Exiting.');
+      process.exit(1);
+    }
+    newVersion = getCurrentVersion();
+    console.log(`✅ Version updated to: ${newVersion}`);
+  } else {
+    console.log(`ℹ️  Keeping current version: ${currentVersion}`);
   }
-
-  if (!execCommand(`npm version ${versionType}`, { cwd: path.join(__dirname, '..') })) {
-    console.error('❌ Version bump failed. Exiting.');
-    process.exit(1);
-  }
-
-  const newVersion = getCurrentVersion();
-  console.log(`✅ Version updated to: ${newVersion}`);
 
   // Step 6: Dry run
   console.log('\n📋 Step 4: Running dry-run...');
@@ -124,7 +123,8 @@ async function main() {
   }
 
   console.log('\n✅ Package published successfully!');
-  console.log(`\n📦 Package: @xinosolutions/react-datatable@${newVersion}`);
+  const publishedVersion = getCurrentVersion();
+  console.log(`\n📦 Package: @xinosolutions/react-datatable@${publishedVersion}`);
   console.log('🌐 View at: https://www.npmjs.com/package/@xinosolutions/react-datatable');
   console.log('\n📝 Next steps:');
   console.log('   1. Verify package on npm website');
