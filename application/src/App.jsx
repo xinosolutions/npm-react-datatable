@@ -57,6 +57,45 @@ function App() {
       description:
         "<div><h3>Lorem ipsum</h3><p>dolor sit amet consectetur, consectetur, adipisicing elit. Adipisci dolore asperiores quos totam quisquam laboriosam commodi aliquid, perferendis corrupti enim dolor sequi. Expedita iste fugit illo sequi repellendus a natus ad tempora recusandae eaque aut!</p></div>",
     },
+    {
+      select_all: "4",
+      serial_no: "04.",
+      name: "Emily Davis",
+      email: "emily.davis@example.com",
+      password: "pass@012",
+      phone_no: "0303-0000001",
+      phone_no1: "0301-0000003",
+      phone_no2: "0301-0000003",
+      phone_no3: "0301-0000003",
+      description:
+        "<div><h3>Lorem ipsum</h3><p>dolor sit amet consectetur, consectetur, adipisicing elit. Adipisci dolore asperiores quos totam quisquam laboriosam commodi aliquid, perferendis corrupti enim dolor sequi. Expedita iste fugit illo sequi repellendus a natus ad tempora recusandae eaque aut!</p></div>",
+    },
+    {
+      select_all: "4",
+      serial_no: "04.",
+      name: "Emily Davis",
+      email: "emily.davis@example.com",
+      password: "pass@012",
+      phone_no: "0303-0000001",
+      phone_no1: "0301-0000003",
+      phone_no2: "0301-0000003",
+      phone_no3: "0301-0000003",
+      description:
+        "<div><h3>Lorem ipsum</h3><p>dolor sit amet consectetur, consectetur, adipisicing elit. Adipisci dolore asperiores quos totam quisquam laboriosam commodi aliquid, perferendis corrupti enim dolor sequi. Expedita iste fugit illo sequi repellendus a natus ad tempora recusandae eaque aut!</p></div>",
+    },
+    {
+      select_all: "4",
+      serial_no: "04.",
+      name: "Emily Davis",
+      email: "emily.davis@example.com",
+      password: "pass@012",
+      phone_no: "0303-0000001",
+      phone_no1: "0301-0000003",
+      phone_no2: "0301-0000003",
+      phone_no3: "0301-0000003",
+      description:
+        "<div><h3>Lorem ipsum</h3><p>dolor sit amet consectetur, consectetur, adipisicing elit. Adipisci dolore asperiores quos totam quisquam laboriosam commodi aliquid, perferendis corrupti enim dolor sequi. Expedita iste fugit illo sequi repellendus a natus ad tempora recusandae eaque aut!</p></div>",
+    },
   ];
 
   const columns = [
@@ -75,6 +114,7 @@ function App() {
       label: "Description",
       type: "html",
     },
+    { key: "phone_no3", label: "Phone No 3" },
   ];
 
   return (

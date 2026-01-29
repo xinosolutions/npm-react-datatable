@@ -76,10 +76,16 @@
 }
 
 .table {
+  display: flex;
+  flex-direction: column;
   width: max-content;
-  border-collapse: collapse;
   border: #f4f5f9 solid 1px;
   margin-bottom: 20px;
+}
+
+.tableRow {
+  display: grid;
+  width: 100%;
 }
 
 .theadSection {
@@ -88,18 +94,61 @@
   z-index: 20;
 }
 
-.theadSection th {
+.theadSection .tableCell {
   padding: 20px 15px;
 }
 
-.tbodySection td {
+.tableRow:nth-child(even) .tableCell {
+  background-color: #f9f9fb;
+}
+
+.tableCell {
   background-color: #fdfdfe;
   padding: 5px 15px;
   white-space: nowrap;
+  border-right: #f4f5f9 solid 1px;
+  border-bottom: #f4f5f9 solid 1px;
+  display: flex;
+  align-items: center;
+  min-height: auto;
 }
 
-.tbodySection tr:nth-child(even) td {
-  background-color: #f9f9fb;
+.tableCell > div {
+  width: 100%;
+  white-space: normal;
+}
+
+.tableCell h1,
+.tableCell h2,
+.tableCell h3,
+.tableCell h4,
+.tableCell h5,
+.tableCell h6 {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.tableCell p {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.tableCell p:last-child,
+.tableCell h1:last-child,
+.tableCell h2:last-child,
+.tableCell h3:last-child,
+.tableCell h4:last-child,
+.tableCell h5:last-child,
+.tableCell h6:last-child {
+  margin-bottom: 0;
+}
+
+.tableRow .tableCell:last-child {
+  border-right: none;
+}
+
+.tableRow:last-child .tableCell {
+  border-bottom: none;
 }
 
 .tableHead {

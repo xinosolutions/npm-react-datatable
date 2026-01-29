@@ -42,52 +42,67 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
         </div>
       </div>
       <div className={styles.userDetailTable}>
-        <table className={styles.table} border={1}>
-          <thead className={styles.theadSection}>
-            <Header {...{ columns, rows, selected, setSelected }} />
-          </thead>
-          <tbody className={styles.tbodySection}>
-            {filteredRows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  style={{
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    padding: "50px",
-                  }}
-                >
-                  No Data Found
-                </td>
-              </tr>
-            ) : (
-              filteredRows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {columns.map((col) => {
-                    let tData = <span>{row[col.key]}</span>;
-                    if (col.type === "radio") {
-                      tData = <Radio {...{ row, col, selected }} />;
-                    } else if (col.type === "checkbox") {
-                      tData = (
-                        <Checkbox {...{ col, row, selected, setSelected }} />
-                      );
-                    } else if (col.type === "number") {
-                      tData = rowIndex + 1;
-                    } else if (col.type === "html") {
-                      tData = (
-                        <div
-                          dangerouslySetInnerHTML={{ __html: row[col.key] }}
-                        />
-                      );
-                    }
+        <div className={styles.table}>
+          <Header 
+            {...{ columns, rows, selected, setSelected }} 
+            gridColumns={columns.length}
+          />
+          {filteredRows.length === 0 ? (
+            <div 
+              className={styles.tableRow}
+              style={{ 
+                gridTemplateColumns: `repeat(${columns.length}, auto)` 
+              }}
+            >
+              <div
+                className={styles.tableCell}
+                style={{
+                  gridColumn: `1 / -1`,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  padding: "50px",
+                }}
+              >
+                No Data Found
+              </div>
+            </div>
+          ) : (
+            filteredRows.map((row, rowIndex) => (
+              <div 
+                key={rowIndex} 
+                className={styles.tableRow}
+                style={{ 
+                  gridTemplateColumns: `repeat(${columns.length}, auto)` 
+                }}
+              >
+                {columns.map((col) => {
+                  let tData = <span>{row[col.key]}</span>;
+                  if (col.type === "radio") {
+                    tData = <Radio {...{ row, col, selected }} />;
+                  } else if (col.type === "checkbox") {
+                    tData = (
+                      <Checkbox {...{ col, row, selected, setSelected }} />
+                    );
+                  } else if (col.type === "number") {
+                    tData = rowIndex + 1;
+                  } else if (col.type === "html") {
+                    tData = (
+                      <div
+                        dangerouslySetInnerHTML={{ __html: row[col.key] }}
+                      />
+                    );
+                  }
 
-                    return <td key={col.key}>{tData}</td>;
-                  })}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  return (
+                    <div key={col.key} className={styles.tableCell}>
+                      {tData}
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../CSS/DataTable.module.css";
 
-const Header = ({ columns, rows, selected, setSelected }) => {
+const Header = ({ columns, rows, selected, setSelected, gridTemplateColumns }) => {
   const handleCheckboxAll = () => {
     if (rows.length > 0 && selected.length === rows.length) {
       setSelected([]);
@@ -10,35 +10,40 @@ const Header = ({ columns, rows, selected, setSelected }) => {
     }
   };
 
-  return (
-    <>
-      <tr>
-        {columns.map((col) => {
-          let tHLabel = col.label;
-          if (col.type === "radio") {
-            tHLabel = <input type="radio" name="select_all" />;
-          }
-          if (col.type === "checkbox") {
-            const isChecked =
-              rows.length > 0 && selected.length === rows.length;
-            console.log(isChecked, "isCheckedisCheckedisChecked");
-            tHLabel = (
-              <input
-                type="checkbox"
-                checked={isChecked}
-                onChange={handleCheckboxAll}
-              />
-            );
-          }
+  const gridCols = gridTemplateColumns || `repeat(${columns.length}, auto)`;
 
-          return (
-            <th key={col.key} className={styles.tableHead}>
-              <span>{tHLabel}</span>
-            </th>
+  return (
+    <div 
+      className={`${styles.tableRow} ${styles.theadSection}`}
+    >
+      {columns.map((col, index) => {
+        let tHLabel = col.label;
+        if (col.type === "radio") {
+          tHLabel = <input type="radio" name="select_all" />;
+        }
+        if (col.type === "checkbox") {
+          const isChecked =
+            rows.length > 0 && selected.length === rows.length;
+          tHLabel = (
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={handleCheckboxAll}
+              aria-label="Select all rows"
+            />
           );
-        })}
-      </tr>
-    </>
+        }
+
+        return (
+          <div 
+            key={col.key || `col-${index}`} 
+            className={`${styles.tableHead} ${styles.tableCell}`}
+          >
+            <span>{tHLabel}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
