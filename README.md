@@ -1,6 +1,6 @@
 <div align="center">
   
-  <img src="https://xinosolutions.com/logos/xino-logo.png" alt="XinoSolutions Logo" width="120" />
+  <img src="https://camo.githubusercontent.com/cfe32456bb3319eb01699f6e37171b62fdef7878a4370eaa899f7ba17457fa0f/68747470733a2f2f78696e6f736f6c7574696f6e732e636f6d2f6c6f676f732f78696e6f2d6c6f676f2e706e67" alt="XinoSolutions Logo" width="120" />
   
   # React DataTable - Development & NPM Package
   
