@@ -10,8 +10,6 @@ const Header = ({ columns, rows, selected, setSelected, gridTemplateColumns }) =
     }
   };
 
-  const gridCols = gridTemplateColumns || `repeat(${columns.length}, auto)`;
-
   return (
     <div 
       className={`${styles.tableRow} ${styles.theadSection}`}

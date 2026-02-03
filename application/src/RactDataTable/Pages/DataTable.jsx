@@ -3,6 +3,9 @@ import styles from "../CSS/DataTable.module.css";
 import Header from "../Components/Header";
 import Checkbox from "../Components/HTML/Checkbox";
 import Radio from "../Components/HTML/Radio";
+import SearchIcon from "../Components/Icons/SearchIcon";
+import ClearIcon from "../Components/Icons/ClearIcon";
+import NoDataIcon from "../Components/Icons/NoDataIcon";
 
 const DataTable = ({ rows, columns, setSelected, selected }) => {
   const [search, setSearch] = useState("");
@@ -22,7 +25,7 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
   };
 
   const filteredRows = handleData();
-  const gridTemplateColumns = `repeat(${columns.length}, auto)`;
+  const gridTemplateColumns = `repeat(${columns.length}, minmax(50px, auto))`;
 
   return (
     <div className={styles.userDetail}>
@@ -39,26 +42,12 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
           <input
             id="searchInput"
             type="text"
-            placeholder="Search across all columns..."
+            placeholder="Search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search table data"
           />
-          <svg
-            className={styles.searchIcon}
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-          </svg>
+          <SearchIcon className={styles.searchIcon} />
           {search && (
             <button
               className={styles.clearButton}
@@ -66,19 +55,7 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
               aria-label="Clear search"
               type="button"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <ClearIcon />
             </button>
           )}
         </div>
@@ -99,22 +76,7 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
               <div className={styles.tableRow}>
                 <div className={styles.noDataCell}>
                   <div className={styles.noDataContent}>
-                    <svg
-                      className={styles.noDataIcon}
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                      <line x1="12" y1="18" x2="12" y2="12"></line>
-                      <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
+                    <NoDataIcon className={styles.noDataIcon} />
                     <h3 className={styles.noDataTitle}>No Data Available</h3>
                     <p className={styles.noDataMessage}>
                       There are no records to display. Add some data to get started.
@@ -125,13 +87,8 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
             ) : (
               <div className={styles.tableRow}>
                 <div
-                  className={styles.tableCell}
-                  style={{
-                    gridColumn: `1 / -1`,
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    padding: "50px",
-                  }}
+                  className={`${styles.tableCell} ${styles.noDataFoundCell}`}
+                  style={{ gridColumn: `1 / -1`,}}
                 >
                   No Data Found
                 </div>
@@ -147,7 +104,9 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
                 {columns.map((col, colIndex) => {
                   let tData = null;
                   
-                  if (col.type === "radio") {
+                  if (col.render && typeof col.render === "function") {
+                    tData = col.render(row, rowIndex);
+                  } else if (col.type === "radio") {
                     tData = <Radio {...{ row, col, selected }} />;
                   } else if (col.type === "checkbox") {
                     tData = (

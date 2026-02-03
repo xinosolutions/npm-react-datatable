@@ -109,6 +109,7 @@ function App() {
     { key: "phone_no1", label: "Phone No 1" },
     { key: "phone_no2", label: "Phone No 2" },
     { key: "phone_no3", label: "Phone No 3" },
+    { label: "Detail", render: () => <div>Detail</div> },
     {
       key: "description",
       label: "Description",
