@@ -193,10 +193,10 @@ function App() {
           checkboxSelection={{
             selected,
             setSelected,
-            select_by: "select_all"
+            selectBy: "select_all"
           }}
-          pagination={{
-            defaultPageSize: 1,
+          theme={{
+            '--table-theme-color': '#3b82f6'
           }}
         />
       </div>

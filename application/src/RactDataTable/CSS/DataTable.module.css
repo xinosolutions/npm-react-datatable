@@ -1,4 +1,5 @@
 .userDetail {
+  --table-theme-color: #4FAFA0;
   padding: 0;
   background-color: #fcfcfe;
   border-radius: 8px;
@@ -327,13 +328,13 @@
 }
 
 .customCheckbox:hover .checkboxLabel {
-  border-color: #3b82f6;
+  border-color: var(--table-theme-color);
   background-color: #f0f7ff;
 }
 
 .customCheckbox input[type="checkbox"]:checked + .checkboxLabel {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
+  background-color: var(--table-theme-color);
+  border-color: var(--table-theme-color);
 }
 
 .customCheckbox input[type="checkbox"]:checked + .checkboxLabel::after {
@@ -373,12 +374,12 @@
 }
 
 .customRadio:hover .radioLabel {
-  border-color: #3b82f6;
+  border-color: var(--table-theme-color);
   background-color: #f0f7ff;
 }
 
 .customRadio input[type="radio"]:checked + .radioLabel {
-  border-color: #3b82f6;
+  border-color: var(--table-theme-color);
   background-color: #fff;
 }
 
@@ -391,7 +392,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: #3b82f6;
+  background-color: var(--table-theme-color);
   transition: all 0.2s ease;
 }
 
@@ -496,8 +497,8 @@
 
 .paginationButton:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(79, 175, 160, 0.1);
+  border-color: var(--table-theme-color);
 }
 
 .paginationButton:disabled {
@@ -555,8 +556,8 @@
 
 .pageNumberButton:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(79, 175, 160, 0.1);
+  border-color: var(--table-theme-color);
 }
 
 .pageNumberButton:disabled {
@@ -564,15 +565,16 @@
 }
 
 .pageNumberButton.activePage {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
+  background-color: var(--table-theme-color);
+  border-color: var(--table-theme-color);
   color: #fff;
   font-weight: 600;
 }
 
 .pageNumberButton.activePage:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--table-theme-color);
+  border-color: var(--table-theme-color);
+  filter: brightness(0.9);
 }
 
 .ellipsis {
@@ -621,12 +623,23 @@
 
 .pageSizeSelect:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(79, 175, 160, 0.1);
+  border-color: var(--table-theme-color);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .userDetailHead {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .userDetailHead .searchContainer {
+    margin-left: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
   .paginationControls {
     flex-direction: column;
     align-items: stretch;

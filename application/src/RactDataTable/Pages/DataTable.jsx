@@ -12,11 +12,12 @@ const DataTable = ({
   columns,
   pagination,
   checkboxSelection,
+  theme,
 }) => {
   const {
     selected,
     setSelected,
-    select_by,
+    selectBy: selectByProp,
   } = checkboxSelection || {};
 
   const hasCheckboxSelection = checkboxSelection !== undefined &&
@@ -24,7 +25,7 @@ const DataTable = ({
     selected !== undefined &&
     setSelected !== undefined;
 
-  const selectBy = select_by !== undefined ? select_by : "_id";
+  const selectBy = selectByProp !== undefined ? selectByProp : "_id";
   const {
     showTopPagination = true,
     showBottomPagination = true,
@@ -83,8 +84,17 @@ const DataTable = ({
     setPageSize(newPageSize);
   };
 
+  // Prepare theme styles
+  const themeStyles = useMemo(() => {
+    const stylesObj = {};
+    if (theme && theme['--table-theme-color']) {
+      stylesObj['--table-theme-color'] = theme['--table-theme-color'];
+    }
+    return stylesObj;
+  }, [theme]);
+
   return (
-    <div className={styles.userDetail}>
+    <div className={styles.userDetail} style={themeStyles}>
       <div className={styles.userDetailHead}>
         <div className={styles.titleSection}>
           <h2 className={styles.title}>Search Table Data</h2>
