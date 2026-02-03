@@ -1,14 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styles from "../CSS/DataTable.module.css";
 import Header from "../Components/Header";
 import Checkbox from "../Components/HTML/Checkbox";
-import Radio from "../Components/HTML/Radio";
 import SearchIcon from "../Components/Icons/SearchIcon";
 import ClearIcon from "../Components/Icons/ClearIcon";
 import NoDataIcon from "../Components/Icons/NoDataIcon";
+import Pagination from "../Components/Pagination";
 
-const DataTable = ({ rows, columns, setSelected, selected }) => {
+const DataTable = ({
+  rows,
+  columns,
+  pagination,
+  checkboxSelection,
+}) => {
+  const {
+    selected,
+    setSelected,
+    select_by,
+  } = checkboxSelection || {};
+
+  const hasCheckboxSelection = checkboxSelection !== undefined &&
+    checkboxSelection !== null &&
+    selected !== undefined &&
+    setSelected !== undefined;
+
+  const selectBy = select_by !== undefined ? select_by : "_id";
+  const {
+    showTopPagination = true,
+    showBottomPagination = true,
+    defaultPageSize = 50,
+    pageSizeOptions = [10, 50, 100, 500],
+  } = pagination || {};
+
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(defaultPageSize);
 
   const handleData = () => {
     if (!search.trim()) return rows;
@@ -24,8 +50,38 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
     );
   };
 
-  const filteredRows = handleData();
-  const gridTemplateColumns = `repeat(${columns.length}, minmax(50px, auto))`;
+  const filteredRows = useMemo(() => handleData(), [rows, search, columns]);
+  const gridTemplateColumns = hasCheckboxSelection
+    ? `minmax(50px, auto) repeat(${columns.length}, minmax(50px, auto))`
+    : `repeat(${columns.length}, minmax(50px, auto))`;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize]);
+
+  const totalRecords = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize - 1, totalRecords - 1);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex + 1);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+  };
 
   return (
     <div className={styles.userDetail}>
@@ -60,21 +116,46 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
           )}
         </div>
       </div>
+      {showTopPagination && totalRecords > 0 && (
+        <div className={styles.paginationWrapper}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalRecords={totalRecords}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            pageSizeOptions={pageSizeOptions}
+          />
+        </div>
+      )}
       <div className={styles.userDetailTable}>
-        <div 
+        <div
           className={styles.table}
-          style={{ 
+          style={{
             gridTemplateColumns: gridTemplateColumns
           }}
         >
-          <Header 
-            {...{ columns, rows, selected, setSelected }} 
+          <Header
+            {...{
+              columns,
+              rows: paginatedRows,
+              selected,
+              setSelected,
+              selectBy,
+              hasCheckboxSelection
+            }}
             gridTemplateColumns={gridTemplateColumns}
           />
           {filteredRows.length === 0 ? (
             rows.length === 0 ? (
               <div className={styles.tableRow}>
-                <div className={styles.noDataCell}>
+                <div
+                  className={styles.noDataCell}
+                  style={{ gridColumn: `1 / -1` }}
+                >
                   <div className={styles.noDataContent}>
                     <NoDataIcon className={styles.noDataIcon} />
                     <h3 className={styles.noDataTitle}>No Data Available</h3>
@@ -88,59 +169,79 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
               <div className={styles.tableRow}>
                 <div
                   className={`${styles.tableCell} ${styles.noDataFoundCell}`}
-                  style={{ gridColumn: `1 / -1`,}}
+                  style={{ gridColumn: `1 / -1` }}
                 >
                   No Data Found
                 </div>
               </div>
             )
           ) : (
-            filteredRows.map((row, rowIndex) => (
-              <div 
-                key={rowIndex} 
-                className={styles.tableRow}
-                data-row-index={rowIndex}
-              >
-                {columns.map((col, colIndex) => {
-                  let tData = null;
-                  
-                  if (col.render && typeof col.render === "function") {
-                    tData = col.render(row, rowIndex);
-                  } else if (col.type === "radio") {
-                    tData = <Radio {...{ row, col, selected }} />;
-                  } else if (col.type === "checkbox") {
-                    tData = (
-                      <Checkbox {...{ col, row, selected, setSelected }} />
-                    );
-                  } else if (col.type === "number") {
-                    tData = <span>{rowIndex + 1}</span>;
-                  } else if (col.type === "html") {
-                    tData = (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: row[col.key] || '' }}
-                      />
-                    );
-                  } else if (col.key && row[col.key] !== undefined) {
-                    tData = <span>{row[col.key]}</span>;
-                  } else {
-                    tData = <span></span>;
-                  }
-
-                  return (
-                    <div 
-                      key={col.key || `col-${colIndex}`} 
-                      className={`${styles.tableCell} ${rowIndex % 2 === 1 ? styles.evenRow : ''}`}
-                      data-row-index={rowIndex}
+            paginatedRows.map((row, rowIndex) => {
+              const actualRowIndex = startIndex + rowIndex;
+              return (
+                <div
+                  key={actualRowIndex}
+                  className={styles.tableRow}
+                  data-row-index={actualRowIndex}
+                >
+                  {hasCheckboxSelection && (
+                    <div
+                      className={`${styles.tableCell} ${actualRowIndex % 2 === 1 ? styles.evenRow : ''}`}
+                      data-row-index={actualRowIndex}
                     >
-                      {tData}
+                      <Checkbox {...{ row, selected, setSelected, selectBy }} />
                     </div>
-                  );
-                })}
-              </div>
-            ))
+                  )}
+                  {columns.map((col, colIndex) => {
+                    let tData = null;
+
+                    if (col.render && typeof col.render === "function") {
+                      tData = col.render(row, actualRowIndex);
+                    } else if (col.type === "number") {
+                      tData = <span>{actualRowIndex + 1}</span>;
+                    } else if (col.type === "html") {
+                      tData = (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: row[col.key] || '' }}
+                        />
+                      );
+                    } else if (col.key && row[col.key] !== undefined) {
+                      tData = <span>{row[col.key]}</span>;
+                    } else {
+                      tData = <span></span>;
+                    }
+
+                    return (
+                      <div
+                        key={col.key || `col-${colIndex}`}
+                        className={`${styles.tableCell} ${actualRowIndex % 2 === 1 ? styles.evenRow : ''}`}
+                        data-row-index={actualRowIndex}
+                      >
+                        {tData}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })
           )}
         </div>
       </div>
+      {showBottomPagination && totalRecords > 0 && (
+        <div className={styles.paginationWrapper}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalRecords={totalRecords}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            pageSizeOptions={pageSizeOptions}
+          />
+        </div>
+      )}
     </div>
   );
 };

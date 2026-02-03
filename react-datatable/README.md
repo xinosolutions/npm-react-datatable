@@ -1,6 +1,6 @@
 # @xinosolutions/react-datatable
 
-A modern, feature-rich React DataTable component with search functionality, row selection (checkbox/radio), and customizable columns.
+A modern, feature-rich React DataTable component with search functionality, pagination, row selection (checkbox/radio), and customizable columns.
 
 > **Note:** This is the npm package directory. For development, see the `application/` folder in the root of this repository.
 
@@ -62,12 +62,16 @@ export default App;
 
 ## Props
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `rows` | `Array<Object>` | Yes | Array of data objects to display in the table |
-| `columns` | `Array<Object>` | Yes | Array of column configuration objects |
-| `selected` | `Array<Object>` | Yes | Array of selected row objects |
-| `setSelected` | `Function` | Yes | Function to update the selected rows |
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `rows` | `Array<Object>` | Yes | - | Array of data objects to display in the table |
+| `columns` | `Array<Object>` | Yes | - | Array of column configuration objects |
+| `selected` | `Array<Object>` | Yes | - | Array of selected row objects |
+| `setSelected` | `Function` | Yes | - | Function to update the selected rows |
+| `showTopPagination` | `Boolean` | No | `true` | Show pagination controls at the top of the table |
+| `showBottomPagination` | `Boolean` | No | `true` | Show pagination controls at the bottom of the table |
+| `defaultPageSize` | `Number` | No | `10` | Default number of items per page |
+| `pageSizeOptions` | `Array<Number>` | No | `[10, 25, 50, 100]` | Available page size options for the dropdown |
 
 ## Column Types
 
@@ -96,9 +100,57 @@ export default App;
 { key: 'description', label: 'Description', type: 'html' }
 ```
 
+## Pagination
+
+The DataTable component includes comprehensive pagination functionality:
+
+### Basic Usage
+Pagination is enabled by default with 10 items per page. You can customize it:
+
+```jsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  selected={selected}
+  setSelected={setSelected}
+  defaultPageSize={25}
+  pageSizeOptions={[10, 25, 50, 100, 200]}
+/>
+```
+
+### Pagination Controls
+- **First/Previous/Next/Last buttons**: Navigate between pages
+- **Page numbers**: Click to jump to a specific page
+- **Page size selector**: Change the number of items per page (10, 25, 50, 100)
+- **Record information**: Shows "Showing X to Y of Z records"
+- **Page information**: Displays current page and total pages
+
+### Show/Hide Pagination
+You can control pagination visibility:
+
+```jsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  selected={selected}
+  setSelected={setSelected}
+  showTopPagination={true}    // Show pagination at top
+  showBottomPagination={false} // Hide pagination at bottom
+/>
+```
+
+### Pagination Features
+- Automatically resets to page 1 when search query changes
+- Works seamlessly with search functionality (paginates filtered results)
+- Handles edge cases (empty data, single page, large datasets)
+- Responsive design for mobile devices
+- Accessible keyboard navigation
+
 ## Features
 
 - ✅ Search functionality across all columns
+- ✅ **Pagination with customizable page sizes**
+- ✅ **Top and bottom pagination controls**
 - ✅ Row selection with checkboxes
 - ✅ Radio button selection
 - ✅ Customizable columns

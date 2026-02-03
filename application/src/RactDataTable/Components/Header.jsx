@@ -1,43 +1,80 @@
 import React from "react";
 import styles from "../CSS/DataTable.module.css";
 
-const Header = ({ columns, rows, selected, setSelected, gridTemplateColumns }) => {
+const Header = ({
+  columns,
+  rows,
+  selected,
+  setSelected,
+  selectBy = "_id",
+  hasCheckboxSelection = false
+}) => {
   const handleCheckboxAll = () => {
-    if (rows.length > 0 && selected.length === rows.length) {
-      setSelected([]);
+    const currentPageRowIds = rows.map((row) => row[selectBy] || JSON.stringify(row));
+
+    const allCurrentPageSelected = rows.length > 0 &&
+      rows.every((row) => {
+        const rowId = row[selectBy] || JSON.stringify(row);
+        return selected.some((sel) => {
+          const selId = sel[selectBy] || JSON.stringify(sel);
+          return selId === rowId;
+        });
+      });
+
+    if (allCurrentPageSelected) {
+      setSelected((prevSelected) =>
+        prevSelected.filter((sel) => {
+          const selId = sel[selectBy] || JSON.stringify(sel);
+          return !currentPageRowIds.includes(selId);
+        })
+      );
     } else {
-      setSelected(rows);
+      setSelected((prevSelected) => {
+        const newSelections = rows.filter((row) => {
+          const rowId = row[selectBy] || JSON.stringify(row);
+          return !prevSelected.some((sel) => {
+            const selId = sel[selectBy] || JSON.stringify(sel);
+            return selId === rowId;
+          });
+        });
+        return [...prevSelected, ...newSelections];
+      });
     }
   };
 
+  const isAllChecked = hasCheckboxSelection && rows.length > 0 &&
+    rows.every((row) => {
+      const rowId = row[selectBy] || JSON.stringify(row);
+      return selected.some((sel) => {
+        const selId = sel[selectBy] || JSON.stringify(sel);
+        return selId === rowId;
+      });
+    });
+
   return (
-    <div 
+    <div
       className={`${styles.tableRow} ${styles.theadSection}`}
     >
-      {columns.map((col, index) => {
-        let tHLabel = col.label;
-        if (col.type === "radio") {
-          tHLabel = <input type="radio" name="select_all" />;
-        }
-        if (col.type === "checkbox") {
-          const isChecked =
-            rows.length > 0 && selected.length === rows.length;
-          tHLabel = (
+      {hasCheckboxSelection && (
+        <div className={`${styles.tableHead} ${styles.tableCell}`}>
+          <label className={styles.customCheckbox}>
             <input
               type="checkbox"
-              checked={isChecked}
+              checked={isAllChecked}
               onChange={handleCheckboxAll}
-              aria-label="Select all rows"
+              aria-label="Select all rows on current page"
             />
-          );
-        }
-
+            <span className={styles.checkboxLabel}></span>
+          </label>
+        </div>
+      )}
+      {columns.map((col, index) => {
         return (
-          <div 
-            key={col.key || `col-${index}`} 
+          <div
+            key={col.key || `col-${index}`}
             className={`${styles.tableHead} ${styles.tableCell}`}
           >
-            <span>{tHLabel}</span>
+            <span>{col.label}</span>
           </div>
         );
       })}

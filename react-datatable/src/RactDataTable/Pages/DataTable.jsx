@@ -1,25 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styles from "../CSS/DataTable.module.css";
 import Header from "../Components/Header";
 import Checkbox from "../Components/HTML/Checkbox";
 import Radio from "../Components/HTML/Radio";
+import Pagination from "../Components/Pagination";
 
-const DataTable = ({ rows, columns, setSelected, selected }) => {
+const DataTable = ({
+  rows,
+  columns,
+  setSelected,
+  selected,
+  showTopPagination = true,
+  showBottomPagination = true,
+  defaultPageSize = 10,
+  pageSizeOptions = [10, 25, 50, 100],
+}) => {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(defaultPageSize);
 
-  const hanldeData = () => {
-    if (!search) return rows;
+  const handleData = () => {
+    if (!search.trim()) return rows;
+    const searchLower = search.toLowerCase();
     return rows.filter((row) =>
       columns.some((col) => {
-        if (row[col.key]) {
-          return row[col.key].toLowerCase().includes(search);
+        if (col.key && row[col.key]) {
+          const cellValue = String(row[col.key]);
+          return cellValue.toLowerCase().includes(searchLower);
         }
         return false;
       }),
     );
   };
 
-  const filteredRows = hanldeData();
+  const filteredRows = useMemo(() => handleData(), [rows, search, columns]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Reset to page 1 when pageSize changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize]);
+
+  // Calculate pagination values
+  const totalRecords = filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize - 1, totalRecords - 1);
+  const paginatedRows = filteredRows.slice(startIndex, endIndex + 1);
+
+  // Ensure currentPage is valid
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+  };
 
   return (
     <div className={styles.userDetail}>
@@ -41,10 +87,25 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
           />
         </div>
       </div>
+      {showTopPagination && totalRecords > 0 && (
+        <div className={styles.paginationWrapper}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalRecords={totalRecords}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            pageSizeOptions={pageSizeOptions}
+          />
+        </div>
+      )}
       <div className={styles.userDetailTable}>
         <div className={styles.table}>
           <Header 
-            {...{ columns, rows, selected, setSelected }} 
+            {...{ columns, rows: paginatedRows, selected, setSelected }} 
             gridColumns={columns.length}
           />
           {filteredRows.length === 0 ? (
@@ -67,43 +128,61 @@ const DataTable = ({ rows, columns, setSelected, selected }) => {
               </div>
             </div>
           ) : (
-            filteredRows.map((row, rowIndex) => (
-              <div 
-                key={rowIndex} 
-                className={styles.tableRow}
-                style={{ 
-                  gridTemplateColumns: `repeat(${columns.length}, auto)` 
-                }}
-              >
-                {columns.map((col) => {
-                  let tData = <span>{row[col.key]}</span>;
-                  if (col.type === "radio") {
-                    tData = <Radio {...{ row, col, selected }} />;
-                  } else if (col.type === "checkbox") {
-                    tData = (
-                      <Checkbox {...{ col, row, selected, setSelected }} />
-                    );
-                  } else if (col.type === "number") {
-                    tData = rowIndex + 1;
-                  } else if (col.type === "html") {
-                    tData = (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: row[col.key] }}
-                      />
-                    );
-                  }
+            paginatedRows.map((row, rowIndex) => {
+              const actualRowIndex = startIndex + rowIndex;
+              return (
+                <div 
+                  key={actualRowIndex} 
+                  className={styles.tableRow}
+                  style={{ 
+                    gridTemplateColumns: `repeat(${columns.length}, auto)` 
+                  }}
+                >
+                  {columns.map((col) => {
+                    let tData = <span>{row[col.key]}</span>;
+                    if (col.type === "radio") {
+                      tData = <Radio {...{ row, col, selected }} />;
+                    } else if (col.type === "checkbox") {
+                      tData = (
+                        <Checkbox {...{ col, row, selected, setSelected }} />
+                      );
+                    } else if (col.type === "number") {
+                      tData = actualRowIndex + 1;
+                    } else if (col.type === "html") {
+                      tData = (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: row[col.key] }}
+                        />
+                      );
+                    }
 
-                  return (
-                    <div key={col.key} className={styles.tableCell}>
-                      {tData}
-                    </div>
-                  );
-                })}
-              </div>
-            ))
+                    return (
+                      <div key={col.key} className={styles.tableCell}>
+                        {tData}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })
           )}
         </div>
       </div>
+      {showBottomPagination && totalRecords > 0 && (
+        <div className={styles.paginationWrapper}>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalRecords={totalRecords}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            pageSizeOptions={pageSizeOptions}
+          />
+        </div>
+      )}
     </div>
   );
 };
