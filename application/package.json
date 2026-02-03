@@ -36,8 +36,5 @@
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.5"
-  },
-  "dependencies": {
-    "@xinosolutions/react-datatable": "^1.0.1"
   }
 }

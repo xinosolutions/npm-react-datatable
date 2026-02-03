@@ -1,0 +1,15 @@
+{
+  "name": "react-datatable-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workspace for react-datatable package and application",
+  "type": "module",
+  "scripts": {
+    "link": "node scripts/link.js",
+    "unlink": "node scripts/unlink.js"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

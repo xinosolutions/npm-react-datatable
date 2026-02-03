@@ -1,36 +1,39 @@
 import React from "react";
 import styles from "../CSS/DataTable.module.css";
 
-const Header = ({ columns, rows, selected, setSelected, gridColumns }) => {
+const Header = ({
+  columns,
+  rows,
+  selected,
+  setSelected,
+  selectBy = "_id",
+  hasCheckboxSelection = false
+}) => {
   const handleCheckboxAll = () => {
-    // Get IDs of current page rows
-    const currentPageRowIds = rows.map((row) => row.id || JSON.stringify(row));
-    
-    // Check if all current page rows are selected
-    const allCurrentPageSelected = rows.length > 0 && 
+    const currentPageRowIds = rows.map((row) => row[selectBy] || JSON.stringify(row));
+
+    const allCurrentPageSelected = rows.length > 0 &&
       rows.every((row) => {
-        const rowId = row.id || JSON.stringify(row);
+        const rowId = row[selectBy] || JSON.stringify(row);
         return selected.some((sel) => {
-          const selId = sel.id || JSON.stringify(sel);
+          const selId = sel[selectBy] || JSON.stringify(sel);
           return selId === rowId;
         });
       });
 
     if (allCurrentPageSelected) {
-      // Deselect all current page rows
       setSelected((prevSelected) =>
         prevSelected.filter((sel) => {
-          const selId = sel.id || JSON.stringify(sel);
+          const selId = sel[selectBy] || JSON.stringify(sel);
           return !currentPageRowIds.includes(selId);
         })
       );
     } else {
-      // Select all current page rows (merge with existing selections)
       setSelected((prevSelected) => {
         const newSelections = rows.filter((row) => {
-          const rowId = row.id || JSON.stringify(row);
+          const rowId = row[selectBy] || JSON.stringify(row);
           return !prevSelected.some((sel) => {
-            const selId = sel.id || JSON.stringify(sel);
+            const selId = sel[selectBy] || JSON.stringify(sel);
             return selId === rowId;
           });
         });
@@ -39,42 +42,39 @@ const Header = ({ columns, rows, selected, setSelected, gridColumns }) => {
     }
   };
 
+  const isAllChecked = hasCheckboxSelection && rows.length > 0 &&
+    rows.every((row) => {
+      const rowId = row[selectBy] || JSON.stringify(row);
+      return selected.some((sel) => {
+        const selId = sel[selectBy] || JSON.stringify(sel);
+        return selId === rowId;
+      });
+    });
+
   return (
-    <div 
+    <div
       className={`${styles.tableRow} ${styles.theadSection}`}
-      style={{ 
-        gridTemplateColumns: `repeat(${gridColumns}, auto)` 
-      }}
     >
-      {columns.map((col) => {
-        let tHLabel = col.label;
-        if (col.type === "radio") {
-          tHLabel = <input type="radio" name="select_all" />;
-        }
-        if (col.type === "checkbox") {
-          // Check if all current page rows are selected
-          const isChecked =
-            rows.length > 0 &&
-            rows.every((row) => {
-              const rowId = row.id || JSON.stringify(row);
-              return selected.some((sel) => {
-                const selId = sel.id || JSON.stringify(sel);
-                return selId === rowId;
-              });
-            });
-          tHLabel = (
+      {hasCheckboxSelection && (
+        <div className={`${styles.tableHead} ${styles.tableCell}`}>
+          <label className={styles.customCheckbox}>
             <input
               type="checkbox"
-              checked={isChecked}
+              checked={isAllChecked}
               onChange={handleCheckboxAll}
               aria-label="Select all rows on current page"
             />
-          );
-        }
-
+            <span className={styles.checkboxLabel}></span>
+          </label>
+        </div>
+      )}
+      {columns.map((col, index) => {
         return (
-          <div key={col.key} className={`${styles.tableHead} ${styles.tableCell}`}>
-            <span>{tHLabel}</span>
+          <div
+            key={col.key || `col-${index}`}
+            className={`${styles.tableHead} ${styles.tableCell}`}
+          >
+            <span>{col.label}</span>
           </div>
         );
       })}

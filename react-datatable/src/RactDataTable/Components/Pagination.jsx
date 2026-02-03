@@ -1,5 +1,7 @@
 import React from "react";
 import styles from "../CSS/DataTable.module.css";
+import ChevronLeftIcon from "./Icons/ChevronLeftIcon";
+import ChevronRightIcon from "./Icons/ChevronRightIcon";
 
 const Pagination = ({
   currentPage,
@@ -135,13 +137,13 @@ const Pagination = ({
             First
           </button>
           <button
-            className={styles.paginationButton}
+            className={`${styles.paginationButton} ${styles.arrowButton}`}
             onClick={handlePrevious}
             disabled={isPreviousDisabled}
             aria-label="Previous page"
             type="button"
           >
-            Previous
+            <ChevronLeftIcon className={styles.chevronIcon} />
           </button>
 
           <div className={styles.pageNumbers}>
@@ -174,13 +176,13 @@ const Pagination = ({
           </div>
 
           <button
-            className={styles.paginationButton}
+            className={`${styles.paginationButton} ${styles.arrowButton}`}
             onClick={handleNext}
             disabled={isNextDisabled}
             aria-label="Next page"
             type="button"
           >
-            Next
+            <ChevronRightIcon className={styles.chevronIcon} />
           </button>
           <button
             className={styles.paginationButton}

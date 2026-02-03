@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { DataTable } from "./RactDataTable";
-// import { DataTable } from "@xinosolutions/react-datatable";
+import { DataTable } from './RactDataTable';
+// import { DataTable } from '@xinosolutions/react-datatable';
 
 function App() {
   const [selected, setSelected] = useState([]);

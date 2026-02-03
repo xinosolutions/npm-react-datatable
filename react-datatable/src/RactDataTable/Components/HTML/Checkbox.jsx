@@ -1,18 +1,27 @@
 import React from "react";
+import styles from "../../CSS/DataTable.module.css";
 
-const Checkbox = ({ col, row, selected, setSelected }) => {
+const Checkbox = ({ row, selected, setSelected, selectBy = "_id" }) => {
   const handleCheckbox = (event) => {
     if (event.target.checked) {
       setSelected((prev) => [...prev, row]);
     } else {
-      setSelected((prev) => prev.filter((r) => r[col.key] !== row[col.key]));
+      setSelected((prev) => prev.filter((r) => r[selectBy] !== row[selectBy]));
     }
   };
 
-  const isChecked = selected.some((s) => s[col.key] === row[col.key]);
+  const isChecked = selected.some((s) => s[selectBy] === row[selectBy]);
 
   return (
-    <input type="checkbox" checked={isChecked} onChange={handleCheckbox} />
+    <label className={styles.customCheckbox}>
+      <input 
+        type="checkbox" 
+        checked={isChecked} 
+        onChange={handleCheckbox}
+        aria-label={`Select row ${row[selectBy] || 'item'}`}
+      />
+      <span className={styles.checkboxLabel}></span>
+    </label>
   );
 };
 
