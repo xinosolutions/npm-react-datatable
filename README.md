@@ -38,45 +38,6 @@ This package is part of our open-source initiative to contribute valuable tools 
 
 ---
 
-## Project structure
-
-```
-react-datatable/
-├── src/                 # Package source (edit here)
-├── demo/                # Local Vite playground (not published)
-├── scripts/             # deploy / link / unlink
-├── package.json
-├── vite.config.js       # Demo: aliases package → src for live reload
-└── webpack.config.cjs   # Library build
-```
-
----
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
-
-Open the Vite URL (usually `http://localhost:5173`). Changes under `src/` hot-reload in the demo via the package alias—no copy step.
-
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Start local demo |
-| `npm run build` | Build publishable package to `build/` |
-| `npm run deploy` | Auth-style publish flow (build → version → publish) |
-| `npm run link` | Build + register global `npm link` for consumer apps |
-| `npm run unlink` | Remove global link |
-
-```bash
-npm run deploy
-# or: ALLOW_DIRTY=1 npm run deploy
-# or: node scripts/deploy.mjs patch|minor|major
-```
-
----
-
 ## Installation
 
 ```bash
