@@ -180,15 +180,13 @@ const handleMenu = (row) => [
 
 Menu item shape: `{ label, icon?, danger?, onClick? }`.
 
-### HTML Column (XSS warning)
-
-`type: "html"` uses `dangerouslySetInnerHTML`. Only use with trusted content, or pass `sanitizeHtml`:
+### HTML Column
 
 ```jsx
 <DataTable
   rows={rows}
   columns={[{ key: 'bio', label: 'Bio', type: 'html' }]}
-  sanitizeHtml={(html) => yourSanitize(html)}
+  sanitizeHtml={(html) => yourSanitize(html)} // optional
 />
 ```
 
