@@ -2,6 +2,7 @@ import React from "react";
 import styles from "../CSS/DataTable.module.css";
 import ChevronLeftIcon from "./Icons/ChevronLeftIcon";
 import ChevronRightIcon from "./Icons/ChevronRightIcon";
+import useMediaQuery from "../utils/useMediaQuery";
 
 const Pagination = ({
   currentPage,
@@ -13,59 +14,66 @@ const Pagination = ({
   startIndex,
   endIndex,
   pageSizeOptions = [10, 25, 50, 100],
+  instanceId = "dt",
 }) => {
-  // Hide pagination if no records
+  const isCompact = useMediaQuery("(max-width: 768px)");
+  const pageSizeSelectId = `${instanceId}-pageSizeSelect`;
+
   if (totalRecords === 0) {
     return null;
   }
 
-  // Calculate page numbers to display
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisible = 7; // Maximum number of page buttons to show
+    const maxVisible = isCompact ? 3 : 7;
 
     if (totalPages <= maxVisible) {
-      // Show all pages if total pages is less than max visible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
-    } else {
-      // Always show first page
-      pages.push(1);
-
-      let startPage = Math.max(2, currentPage - 1);
-      let endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      // Adjust if we're near the start
-      if (currentPage <= 3) {
-        startPage = 2;
-        endPage = 4;
-      }
-
-      // Adjust if we're near the end
-      if (currentPage >= totalPages - 2) {
-        startPage = totalPages - 3;
-        endPage = totalPages - 1;
-      }
-
-      // Add ellipsis after first page if needed
-      if (startPage > 2) {
-        pages.push("ellipsis-start");
-      }
-
-      // Add pages around current
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-
-      // Add ellipsis before last page if needed
-      if (endPage < totalPages - 1) {
-        pages.push("ellipsis-end");
-      }
-
-      // Always show last page
-      pages.push(totalPages);
+      return pages;
     }
+
+    if (isCompact) {
+      // Compact: current ± neighbors, or first/last when near edges
+      if (currentPage <= 2) {
+        pages.push(1, 2, 3);
+      } else if (currentPage >= totalPages - 1) {
+        pages.push(totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(currentPage - 1, currentPage, currentPage + 1);
+      }
+      return pages;
+    }
+
+    pages.push(1);
+
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    if (currentPage <= 3) {
+      startPage = 2;
+      endPage = 4;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      startPage = totalPages - 3;
+      endPage = totalPages - 1;
+    }
+
+    if (startPage > 2) {
+      pages.push("ellipsis-start");
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    if (endPage < totalPages - 1) {
+      pages.push("ellipsis-end");
+    }
+
+    pages.push(totalPages);
 
     return pages;
   };
@@ -73,27 +81,19 @@ const Pagination = ({
   const pageNumbers = getPageNumbers();
 
   const handleFirst = () => {
-    if (currentPage > 1) {
-      onPageChange(1);
-    }
+    if (currentPage > 1) onPageChange(1);
   };
 
   const handlePrevious = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
-    }
+    if (currentPage > 1) onPageChange(currentPage - 1);
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
-    }
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
   };
 
   const handleLast = () => {
-    if (currentPage < totalPages) {
-      onPageChange(totalPages);
-    }
+    if (currentPage < totalPages) onPageChange(totalPages);
   };
 
   const handlePageClick = (page) => {
@@ -128,7 +128,7 @@ const Pagination = ({
       <div className={styles.paginationControls}>
         <div className={styles.pageNavigation}>
           <button
-            className={styles.paginationButton}
+            className={`${styles.paginationButton} ${styles.firstLastButton}`}
             onClick={handleFirst}
             disabled={isFirstDisabled}
             aria-label="First page"
@@ -185,7 +185,7 @@ const Pagination = ({
             <ChevronRightIcon className={styles.chevronIcon} />
           </button>
           <button
-            className={styles.paginationButton}
+            className={`${styles.paginationButton} ${styles.firstLastButton}`}
             onClick={handleLast}
             disabled={isLastDisabled}
             aria-label="Last page"
@@ -196,11 +196,11 @@ const Pagination = ({
         </div>
 
         <div className={styles.pageSizeSelector}>
-          <label htmlFor="pageSizeSelect" className={styles.pageSizeLabel}>
+          <label htmlFor={pageSizeSelectId} className={styles.pageSizeLabel}>
             Show:
           </label>
           <select
-            id="pageSizeSelect"
+            id={pageSizeSelectId}
             className={styles.pageSizeSelect}
             value={pageSize}
             onChange={handlePageSizeChange}

@@ -65,3 +65,10 @@ export default DataTable;
 
 fs.writeFileSync(buildFile, wrappedContent, 'utf8');
 console.log('Post-build export wrapping completed');
+
+const typesSrc = path.join(__dirname, '../src/index.d.ts');
+const typesDest = path.join(__dirname, '../build/index.d.ts');
+if (fs.existsSync(typesSrc)) {
+  fs.copyFileSync(typesSrc, typesDest);
+  console.log('Copied TypeScript declarations to build/index.d.ts');
+}

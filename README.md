@@ -4,7 +4,7 @@
   
   # @xinosolutions/react-datatable
   
-  A modern, feature-rich React DataTable component with search functionality, pagination, row selection, and customizable theming.
+  A modern React DataTable with search, pagination, row selection, mobile card layout, and theming.
   
   [![npm version](https://img.shields.io/npm/v/@xinosolutions/react-datatable.svg)](https://www.npmjs.com/package/@xinosolutions/react-datatable)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -15,7 +15,7 @@
 
 ## About XinoSolutions
 
-**XinoSolutions** is a software development company dedicated to creating high-quality, developer-friendly solutions. We specialize in building modern React components and tools that help developers build better applications faster. Our commitment to excellence, clean code, and user experience drives everything we create.
+**XinoSolutions** is a software development company dedicated to creating high-quality, developer-friendly solutions. We specialize in building modern React components and tools that help developers build better applications faster.
 
 This package is part of our open-source initiative to contribute valuable tools to the React ecosystem.
 
@@ -23,17 +23,18 @@ This package is part of our open-source initiative to contribute valuable tools 
 
 ## Features
 
-- ✅ **Real-time Search** - Search across all columns with instant filtering
-- ✅ **Pagination** - Full-featured pagination with customizable page sizes
-- ✅ **Row Selection** - Checkbox and radio button selection support
-- ✅ **Customizable Columns** - Multiple column types (text, number, HTML, custom render)
-- ✅ **Theme Customization** - Customizable theme colors via CSS variables
-- ✅ **Responsive Design** - Mobile-friendly and responsive layout
-- ✅ **Sticky Header** - Header stays visible while scrolling
-- ✅ **Empty States** - Beautiful empty state messages
-- ✅ **Accessibility** - ARIA labels and keyboard navigation support
-- ✅ **TypeScript Ready** - Works seamlessly with TypeScript projects
-- ✅ **Zero Dependencies** - No external dependencies (except React)
+- **Real-time Search** — Filter across columns with result count
+- **Pagination** — Bottom bar by default; compact controls on mobile
+- **Row Selection** — Multi-select (checkbox) or single-select (radio)
+- **Customizable Columns** — Text, number, HTML, action menu, custom `render`
+- **Mobile Layout** — Card/stack rows by default under 768px (`mobileLayout="table"` to keep the grid)
+- **Sticky Header** — Enabled when `maxHeight` / `height` constrains the table body
+- **Natural height** — Omit both height props for page-level vertical scroll (horizontal scroll only inside the table)
+- **Sticky Columns** — Selection column stays visible while scrolling horizontally (or the first data column when selection is off)
+- **Theme Customization** — Brand color via `--table-theme-color`
+- **Empty & Loading States** — Clear empty and loading UI
+- **TypeScript Types** — Bundled `index.d.ts`
+- **Zero Runtime Dependencies** — Peer dependency on React only
 
 ---
 
@@ -68,8 +69,6 @@ Open the Vite URL (usually `http://localhost:5173`). Changes under `src/` hot-re
 | `npm run link` | Build + register global `npm link` for consumer apps |
 | `npm run unlink` | Remove global link |
 
-Deploy (same pattern as XS Auth packages):
-
 ```bash
 npm run deploy
 # or: ALLOW_DIRTY=1 npm run deploy
@@ -82,18 +81,6 @@ npm run deploy
 
 ```bash
 npm install @xinosolutions/react-datatable
-```
-
-or
-
-```bash
-yarn add @xinosolutions/react-datatable
-```
-
-or
-
-```bash
-pnpm add @xinosolutions/react-datatable
 ```
 
 ---
@@ -124,10 +111,11 @@ function App() {
     <DataTable
       rows={rows}
       columns={columns}
+      maxHeight={480}
       checkboxSelection={{
         selected,
         setSelected,
-        selectBy: 'id'
+        selectBy: 'id',
       }}
     />
   );
@@ -144,227 +132,178 @@ export default App;
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `rows` | `Array<Object>` | Yes | - | Array of data objects to display in the table |
-| `columns` | `Array<Column>` | Yes | - | Array of column configuration objects |
-| `pagination` | `Object` | No | See below | Pagination configuration object |
-| `checkboxSelection` | `Object` | No | - | Checkbox selection configuration |
-| `theme` | `Object` | No | - | Theme customization object |
+| `rows` | `Array<Object>` | Yes | `[]` | Row data |
+| `columns` | `Array<Column>` | Yes | `[]` | Column config |
+| `pagination` | `Object` | No | See below | Pagination options |
+| `checkboxSelection` | `Object` | No | — | Selection config (checkbox or radio) |
+| `theme` | `Object` | No | — | Theme CSS variables |
+| `handleMenu` | `(row) => MenuItem[]` | No | — | Menu items for `type: "action"` columns |
+| `title` | `string \| null` | No | `"Search Table Data"` | Header title (`null` / `""` hides it) |
+| `showSearch` | `boolean` | No | `true` | Show search input |
+| `searchPlaceholder` | `string` | No | `"Search"` | Search placeholder |
+| `showResultCount` | `boolean` | No | `true` | Show “n of m results” |
+| `maxHeight` | `string \| number` | No | — | Max height of table body (enables sticky header + vertical scroll) |
+| `height` | `string \| number` | No | — | Fixed height of table body (same sticky / vertical-scroll behavior) |
+| `mobileLayout` | `"cards" \| "table"` | No | `"cards"` | Mobile (≤768px) layout mode |
+| `sanitizeHtml` | `(html: string) => string` | No | — | Sanitizer for `type: "html"` cells |
+| `loading` | `boolean` | No | `false` | Show loading state |
 
 ### Pagination Object
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `showTopPagination` | `boolean` | `true` | Show pagination controls at the top |
-| `showBottomPagination` | `boolean` | `true` | Show pagination controls at the bottom |
-| `defaultPageSize` | `number` | `50` | Default number of items per page |
-| `pageSizeOptions` | `Array<number>` | `[10, 50, 100, 500]` | Available page size options |
+| `showTopPagination` | `boolean` | `false` | Show pagination at the top |
+| `showBottomPagination` | `boolean` | `true` | Show pagination at the bottom |
+| `defaultPageSize` | `number` | `50` | Default page size |
+| `pageSizeOptions` | `Array<number>` | `[10, 50, 100, 500]` | Page size options |
 
 ### CheckboxSelection Object
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `selected` | `Array<Object>` | Yes | Array of selected row objects |
-| `setSelected` | `Function` | Yes | Function to update selected rows |
-| `selectBy` | `string` | No | Key to use for row identification (default: `"_id"`) |
+| `selected` | `Array<Object>` | Yes | Selected rows (0–1 items when `mode: "single"`) |
+| `setSelected` | `Function` | Yes | State setter for selected rows |
+| `selectBy` | `string` | No | Row id key (default `"_id"`) |
+| `mode` | `"multiple" \| "single"` | No | `"multiple"` = checkboxes, `"single"` = radio (default `"multiple"`) |
 
 ### Theme Object
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `--table-theme-color` | `string` | CSS variable for theme color (default: `#4FAFA0`) |
+| `--table-theme-color` | `string` | Theme accent (default `#4FAFA0`) |
+
+### Column Shape
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | `string` | Field name on the row |
+| `label` | `string` | Header / card label |
+| `type` | `"number" \| "html" \| "action"` | Special column types |
+| `hideOnMobile` | `boolean` | Hide column under 768px |
+| `render` | `(row, index) => ReactNode` | Custom cell renderer |
 
 ---
 
 ## Column Types
 
-### Standard Column
-
-Displays the value from the row object using the specified key.
+### Standard / Number / Custom Render / Action
 
 ```jsx
-{ key: 'name', label: 'Name' }
+const columns = [
+  { label: '#', type: 'number' },
+  { key: 'name', label: 'Name' },
+  { key: 'phone', label: 'Phone', hideOnMobile: true },
+  {
+    label: 'Status',
+    render: (row) => <strong>{row.status}</strong>,
+  },
+  { label: 'Actions', type: 'action' },
+];
+
+const handleMenu = (row) => [
+  {
+    label: 'Edit',
+    icon: <EditIcon />, // any React node (SVG, emoji, icon component)
+    onClick: () => edit(row),
+  },
+  {
+    label: 'Delete',
+    icon: <TrashIcon />,
+    danger: true, // optional destructive styling
+    onClick: () => remove(row),
+  },
+];
+
+<DataTable rows={rows} columns={columns} handleMenu={handleMenu} />
 ```
 
-### Number Column (Row Number)
+Menu item shape: `{ label, icon?, danger?, onClick? }`.
 
-Displays the row number automatically.
+### HTML Column (XSS warning)
 
-```jsx
-{ label: '#', type: 'number' }
-```
-
-### HTML Column
-
-Renders HTML content from the row data.
+`type: "html"` uses `dangerouslySetInnerHTML`. Only use with trusted content, or pass `sanitizeHtml`:
 
 ```jsx
-{ 
-  key: 'description', 
-  label: 'Description', 
-  type: 'html' 
-}
-```
-
-### Custom Render Column
-
-Use a custom render function for complete control over cell content.
-
-```jsx
-{ 
-  label: 'Actions', 
-  render: (row, index) => (
-    <button onClick={() => handleEdit(row)}>Edit</button>
-  )
-}
+<DataTable
+  rows={rows}
+  columns={[{ key: 'bio', label: 'Bio', type: 'html' }]}
+  sanitizeHtml={(html) => yourSanitize(html)}
+/>
 ```
 
 ---
 
 ## Examples
 
-### Basic Usage
+### Natural height (horizontal scroll only)
 
-```jsx
-import { DataTable } from '@xinosolutions/react-datatable';
-
-const rows = [
-  { id: 1, name: 'John Doe', email: 'john@example.com' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-];
-
-const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-];
-
-<DataTable rows={rows} columns={columns} />
-```
-
-### With Checkbox Selection
-
-```jsx
-import { useState } from 'react';
-import { DataTable } from '@xinosolutions/react-datatable';
-
-function App() {
-  const [selected, setSelected] = useState([]);
-
-  return (
-    <DataTable
-      rows={rows}
-      columns={columns}
-      checkboxSelection={{
-        selected,
-        setSelected,
-        selectBy: 'id'
-      }}
-    />
-  );
-}
-```
-
-### Custom Pagination
+Omit `maxHeight` / `height` so the table grows with its rows. The page scrolls vertically; the header is not sticky; only horizontal overflow stays inside the table.
 
 ```jsx
 <DataTable
   rows={rows}
   columns={columns}
-  pagination={{
-    showTopPagination: true,
-    showBottomPagination: false,
-    defaultPageSize: 25,
-    pageSizeOptions: [10, 25, 50, 100, 200]
-  }}
+  // no maxHeight / height
 />
 ```
 
-### Custom Theme
+### Constrained height (sticky header + vertical scroll)
 
 ```jsx
 <DataTable
   rows={rows}
   columns={columns}
-  theme={{
-    '--table-theme-color': '#3b82f6' // Custom blue theme
-  }}
+  maxHeight={480}
 />
 ```
 
-### Mixed Column Types
-
-```jsx
-const columns = [
-  { label: '#', type: 'number' },
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { 
-    key: 'description', 
-    label: 'Description', 
-    type: 'html' 
-  },
-  { 
-    label: 'Actions', 
-    render: (row) => (
-      <div>
-        <button onClick={() => edit(row)}>Edit</button>
-        <button onClick={() => delete(row)}>Delete</button>
-      </div>
-    )
-  },
-];
-```
-
----
-
-## Search Functionality
-
-The DataTable includes built-in search functionality that:
-
-- Searches across all columns automatically
-- Filters results in real-time as you type
-- Shows result count (e.g., "5 of 12 results")
-- Displays "No Data Found" when search returns no results
-- Resets pagination to page 1 when search query changes
-
-The search is case-insensitive and searches all column values that have a `key` property.
-
----
-
-## Pagination Features
-
-- **First/Previous/Next/Last buttons** - Navigate between pages
-- **Page numbers** - Click to jump to a specific page
-- **Page size selector** - Change items per page
-- **Record information** - Shows "Showing X to Y of Z records"
-- **Page information** - Displays "Page X of Y"
-- **Smart page number display** - Shows ellipsis for large page counts
-- **Responsive design** - Adapts to mobile screens
-
----
-
-## Theme Customization
-
-Customize the table theme by passing a `theme` object with CSS variables:
+### Single-select (radio)
 
 ```jsx
 <DataTable
   rows={rows}
   columns={columns}
-  theme={{
-    '--table-theme-color': '#3b82f6' // Your brand color
+  checkboxSelection={{
+    selected,
+    setSelected,
+    selectBy: 'id',
+    mode: 'single',
   }}
 />
 ```
 
-The theme color is used for:
-- Checkbox checked states
-- Radio button selected states
-- Pagination active page button
-- Focus states on interactive elements
+### Force table layout on mobile
 
-**Default theme color:** `#4FAFA0` (teal)
+```jsx
+<DataTable
+  rows={rows}
+  columns={columns}
+  mobileLayout="table"
+  maxHeight={400}
+/>
+```
+
+### Custom theme & chrome
+
+```jsx
+<DataTable
+  title="Customers"
+  showSearch
+  searchPlaceholder="Find a customer…"
+  rows={rows}
+  columns={columns}
+  theme={{ '--table-theme-color': '#3b82f6' }}
+  pagination={{ defaultPageSize: 25, pageSizeOptions: [10, 25, 50] }}
+/>
+```
+
+---
+
+## Mobile behavior
+
+- **≤768px + `mobileLayout="cards"` (default):** each row becomes a labeled card; action menu and selection sit in the card header.
+- **≤768px + `mobileLayout="table"`:** keeps the grid with horizontal scroll, sticky selection/first column, and compact pagination (First/Last hidden; fewer page buttons).
+- Columns with `hideOnMobile: true` are omitted on small screens in both modes.
 
 ---
 
@@ -377,30 +316,24 @@ The theme color is used for:
 
 ## Browser Support
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+- Chrome, Firefox, Safari, Edge (latest)
 
 ---
 
 ## License
 
-MIT License - see [License](./License) file for details.
+MIT License — see [License](./License) file for details.
 
 ---
 
 ## Support
 
-For issues, feature requests, or questions:
-
-- 📧 Contact us via [XinoSolutions](https://xinosolutions.com/)
-- 📦 [NPM Package](https://www.npmjs.com/package/@xinosolutions/react-datatable)
-- 🌐 [XinoSolutions Website](https://xinosolutions.com/)
+- [XinoSolutions](https://xinosolutions.com/)
+- [NPM Package](https://www.npmjs.com/package/@xinosolutions/react-datatable)
 
 ---
 
 <div align="center">
-  <p><strong>Made with ❤️ by <a href="https://xinosolutions.com/">XinoSolutions</a></strong></p>
+  <p><strong>Made by <a href="https://xinosolutions.com/">XinoSolutions</a></strong></p>
   <p>© 2026 XinoSolutions. All rights reserved.</p>
 </div>

@@ -1,7 +1,4 @@
-import DataTable from './RactDataTable/Pages/DataTable';
+import DataTable from './ReactDataTable/Pages/DataTable';
 
-// Export as default
 export default DataTable;
-
-// Export as named export
 export { DataTable };
