@@ -1,6 +1,6 @@
 {
   "name": "@xinosolutions/react-datatable",
-  "version": "1.0.4",
+  "version": "1.2.0",
   "private": false,
   "description": "A modern, feature-rich React DataTable component with search, selection, and customizable columns",
   "type": "module",
