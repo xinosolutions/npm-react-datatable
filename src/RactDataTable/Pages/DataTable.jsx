@@ -6,6 +6,7 @@ import SearchIcon from "../Components/Icons/SearchIcon";
 import ClearIcon from "../Components/Icons/ClearIcon";
 import NoDataIcon from "../Components/Icons/NoDataIcon";
 import Pagination from "../Components/Pagination";
+import MenuDropdown from "../Components/MenuDropdown";
 
 const DataTable = ({
   rows,
@@ -13,6 +14,7 @@ const DataTable = ({
   pagination,
   checkboxSelection,
   theme,
+  handleMenu,
 }) => {
   const {
     selected,
@@ -205,7 +207,16 @@ const DataTable = ({
                   {columns.map((col, colIndex) => {
                     let tData = null;
 
-                    if (col.render && typeof col.render === "function") {
+                    if (col.type === "action") {
+                      const menuItems = handleMenu ? handleMenu(row) : [];
+                      tData = (
+                        <MenuDropdown
+                          menuItems={menuItems}
+                          row={row}
+                          rowIndex={actualRowIndex}
+                        />
+                      );
+                    } else if (col.render && typeof col.render === "function") {
                       tData = col.render(row, actualRowIndex);
                     } else if (col.type === "number") {
                       tData = <span>{actualRowIndex + 1}</span>;
@@ -224,7 +235,7 @@ const DataTable = ({
                     return (
                       <div
                         key={col.key || `col-${colIndex}`}
-                        className={`${styles.tableCell} ${actualRowIndex % 2 === 1 ? styles.evenRow : ''}`}
+                        className={`${styles.tableCell} ${col.type === "action" ? styles.actionCell : ''} ${actualRowIndex % 2 === 1 ? styles.evenRow : ''}`}
                         data-row-index={actualRowIndex}
                       >
                         {tData}

@@ -1,15 +1,21 @@
 # Source files
 /src
+/demo
 *.jsx
 *.js
 !build/**/*.js
+!scripts/**/*.js
+!scripts/**/*.mjs
 
 # Configuration files
 .babelrc
 .babelrc.js
 webpack.config.js
+webpack.config.cjs
+vite.config.js
 .eslintrc*
 .prettierrc*
+eslint.config.js
 
 # Development files
 node_modules/
@@ -35,6 +41,9 @@ coverage/
 # Documentation (keep README.md)
 CHANGELOG.md
 CONTRIBUTING.md
+DEPLOYMENT_ROADMAP.md
+QUICK_START.md
+SETUP_SUMMARY.md
 
 # Build artifacts (keep build/)
 *.map

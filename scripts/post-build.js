@@ -5,31 +5,27 @@
  * This wraps the webpack output to support both default and named exports
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const buildFile = path.join(__dirname, '../build/index.js');
 
 if (!fs.existsSync(buildFile)) {
-  console.error('❌ Build file not found:', buildFile);
+  console.error('Build file not found:', buildFile);
   process.exit(1);
 }
 
-// Read the built file
 let content = fs.readFileSync(buildFile, 'utf8');
 
-// Check if the content already has the ES module wrapper (to avoid double-wrapping)
 if (content.includes('// ES Module wrapper')) {
-  console.log('ℹ️  ES module wrapper already exists, skipping...');
+  console.log('ES module wrapper already exists, skipping...');
   process.exit(0);
 }
 
-// Wrap CommonJS output with ES module exports
-// The webpack output uses module.exports, we need to convert it to ES module format
 const originalContent = content.trim();
 
-// Create a wrapper that simulates CommonJS and converts to ES modules
-// Note: React and ReactDOM are peer dependencies, so require() will be handled by the bundler
 const wrappedContent = `// ES Module wrapper for CommonJS build
 // Import React and ReactDOM as ES modules (Vite will resolve these)
 import * as React from 'react';
@@ -68,4 +64,4 @@ export default DataTable;
 `;
 
 fs.writeFileSync(buildFile, wrappedContent, 'utf8');
-console.log('✅ Post-build export wrapping completed');
+console.log('Post-build export wrapping completed');

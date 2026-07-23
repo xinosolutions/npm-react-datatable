@@ -1,6 +1,6 @@
 import React from "react";
 
-const ClearIcon = ({ className, width = "16", height = "16", ...props }) => {
+const MenuIcon = ({ className, width = "20", height = "20", ...props }) => {
   return (
     <svg
       className={className}
@@ -12,12 +12,14 @@ const ClearIcon = ({ className, width = "16", height = "16", ...props }) => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      aria-hidden="true"
       {...props}
     >
-      <line x1="18" y1="6" x2="6" y2="18"></line>
-      <line x1="6" y1="6" x2="18" y2="18"></line>
+      <circle cx="12" cy="5" r="1"></circle>
+      <circle cx="12" cy="12" r="1"></circle>
+      <circle cx="12" cy="19" r="1"></circle>
     </svg>
   );
 };
 
-export default ClearIcon;
+export default MenuIcon;

@@ -8,6 +8,7 @@ pnpm-lock.yaml
 build/
 dist/
 dist-ssr/
+demo/dist/
 *.local
 
 # Logs
@@ -77,22 +78,8 @@ coverage/
 # parcel-bundler cache
 .parcel-cache
 
-# Next.js (if used in future)
-.next/
-out/
-
-# Nuxt.js (if used in future)
-.nuxt/
-
 # Vite
 .vite/
 
 # TypeScript (if added in future)
 *.tsbuildinfo
-
-# Storybook (if added in future)
-storybook-static/
-
-# Production build artifacts (keep source, ignore builds)
-# Note: react-datatable/build will be ignored but can be generated
-# application/dist will be ignored

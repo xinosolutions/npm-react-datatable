@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { DataTable } from './RactDataTable';
-// import { DataTable } from '@xinosolutions/react-datatable';
+import { DataTable } from '@xinosolutions/react-datatable';
 
 function App() {
   const [selected, setSelected] = useState([]);
@@ -96,7 +95,26 @@ function App() {
     { key: "phone_number", label: "Phone Number" },
     { key: "address", label: "Address" },
     { key: "is_admin", label: "Is Admin" },
+    { label: "Actions", type: "action" },
   ];
+
+  const handleMenu = (menu) => {
+    return [
+      {
+        label: "Edit",
+        onClick: () => console.log("Edit"),
+      },
+      {
+        label: "Delete",
+        onClick: () => console.log("Delete"),
+      },
+      {
+        label: "View",
+        onClick: () => console.log("View"),
+      },
+    ];
+  };
+
 
   return (
     <>
@@ -105,6 +123,7 @@ function App() {
           rows={rows}
           columns={columns}
           checkboxSelection={{ selected, setSelected }}
+          handleMenu={handleMenu}
         />
       </div>
     </>

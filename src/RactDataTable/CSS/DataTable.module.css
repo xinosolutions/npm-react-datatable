@@ -226,6 +226,14 @@
   text-overflow: ellipsis;
 }
 
+.tableCell {
+  position: relative;
+}
+
+.actionCell {
+  overflow: visible !important;
+}
+
 .noDataFoundCell {
   text-align: center;
   padding: 15px;
@@ -683,6 +691,98 @@
   .ellipsis {
     height: 32px;
   }
+}
+
+/* Menu Dropdown Styles */
+.menuContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  outline: none;
+  box-shadow: none;
+}
+
+.menuButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.menuButton:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.menuButton:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.menuIcon {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+}
+
+.menuDropdown {
+  position: fixed;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: max-content;
+  min-width: 80px;
+  max-width: calc(100vw - 32px);
+  z-index: 10000;
+  overflow: visible;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #374151;
+  font-size: 0.875em;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.menuItem:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.menuItem:focus {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.menuItem:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.menuItem:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 /* .submitButton {
