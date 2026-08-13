@@ -18,11 +18,45 @@ export interface DataTableColumn<Row = Record<string, unknown>> {
   render?: (row: Row, index: number) => ReactNode;
 }
 
+export type PaginationMode = "client" | "server";
+
+export type SearchMode = "client" | "server";
+
+export interface SearchConfig {
+  /**
+   * `"client"` (default): filter `rows` locally as the user types.
+   * `"server"`: controlled input; parent owns fetch. Does not filter `rows`.
+   */
+  mode?: SearchMode;
+  /** Server mode: controlled input value. */
+  value?: string;
+  onChange?: (value: string) => void;
+  /**
+   * Optional. Enter key and a Search button.
+   * Typical: refetch and reset `pagination.page` to `1`.
+   * If omitted, fetch from `onChange` (or a debounce) in the parent.
+   */
+  onSubmit?: (value: string) => void;
+}
+
 export interface PaginationConfig {
+  /**
+   * `"client"` (default) slices `rows` locally.
+   * `"server"` treats `rows` as the current page; parent owns fetch + totals.
+   */
+  mode?: PaginationMode;
   showTopPagination?: boolean;
   showBottomPagination?: boolean;
   defaultPageSize?: number;
   pageSizeOptions?: number[];
+  /** Server mode: total rows across all pages. */
+  totalCount?: number;
+  /** Server mode: 1-based current page. */
+  page?: number;
+  /** Server mode: controlled page size. */
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export interface CheckboxSelectionConfig<Row = Record<string, unknown>> {
@@ -50,6 +84,7 @@ export interface DataTableProps<Row = Record<string, unknown>> {
   rows: Row[];
   columns: DataTableColumn<Row>[];
   pagination?: PaginationConfig;
+  search?: SearchConfig;
   checkboxSelection?: CheckboxSelectionConfig<Row>;
   theme?: DataTableTheme;
   handleMenu?: (row: Row) => MenuItem<Row>[];

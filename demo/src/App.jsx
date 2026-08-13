@@ -1,5 +1,110 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "@xinosolutions/react-datatable";
+
+const DEPARTMENTS = [
+  "Engineering",
+  "Marketing",
+  "Sales",
+  "HR",
+  "Finance",
+  "Support",
+  "Design",
+  "Operations",
+  "Product",
+];
+
+const ALL_SERVER_USERS = Array.from({ length: 87 }, (_, i) => ({
+  _id: String(i + 1),
+  name: `User ${i + 1}`,
+  email: `user${i + 1}@example.com`,
+  phone_number: `+1 (555) ${String(100 + i).padStart(3, "0")}-${String(1000 + i).slice(-4)}`,
+  address: `${100 + i} Demo Street`,
+  is_admin: i % 7 === 0 ? "Yes" : "No",
+  department: DEPARTMENTS[i % DEPARTMENTS.length],
+  status: i % 5 === 0 ? "Inactive" : "Active",
+  role: i % 3 === 0 ? "Manager" : "Specialist",
+  joined_date: "2021-03-15",
+  country: "USA",
+}));
+
+function fetchUsersPage(page, pageSize, query = "") {
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
+      const q = query.trim().toLowerCase();
+      const filtered = q
+        ? ALL_SERVER_USERS.filter((row) =>
+            [row.name, row.email, row.department, row.role, row.status]
+              .join(" ")
+              .toLowerCase()
+              .includes(q),
+          )
+        : ALL_SERVER_USERS;
+      const start = (page - 1) * pageSize;
+      resolve({
+        rows: filtered.slice(start, start + pageSize),
+        totalCount: filtered.length,
+      });
+    }, 350);
+  });
+}
+
+function ServerPagedUsers({ columns, handleMenu }) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchValue, setSearchValue] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [rows, setRows] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchUsersPage(page, pageSize, appliedSearch).then((result) => {
+      if (cancelled) return;
+      setRows(result.rows);
+      setTotalCount(result.totalCount);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [page, pageSize, appliedSearch]);
+
+  return (
+    <DataTable
+      title="Users (server pagination)"
+      rows={rows}
+      columns={columns}
+      loading={loading}
+      maxHeight={420}
+      mobileLayout="cards"
+      theme={{ "--table-theme-color": "#4FAFA0" }}
+      search={{
+        mode: "server",
+        value: searchValue,
+        onChange: setSearchValue,
+        onSubmit: (value) => {
+          setPage(1);
+          setAppliedSearch(value);
+        },
+      }}
+      pagination={{
+        mode: "server",
+        totalCount,
+        page,
+        pageSize,
+        onPageChange: setPage,
+        onPageSizeChange: (nextSize) => {
+          setPageSize(nextSize);
+          setPage(1);
+        },
+        pageSizeOptions: [5, 10, 25, 50],
+      }}
+      handleMenu={handleMenu}
+    />
+  );
+}
 
 function App() {
   const [selected, setSelected] = useState([]);
@@ -190,6 +295,7 @@ function App() {
   ];
 
   return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: 16 }}>
       <DataTable
         title="Users"
         rows={rows}
@@ -206,6 +312,8 @@ function App() {
         checkboxSelection={{ selected, setSelected, selectBy: "_id" }}
         handleMenu={handleMenu}
       />
+      <ServerPagedUsers columns={columns} handleMenu={handleMenu} />
+    </div>
   );
 }
 

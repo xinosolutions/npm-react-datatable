@@ -23,8 +23,8 @@ This package is part of our open-source initiative to contribute valuable tools 
 
 ## Features
 
-- **Real-time Search** — Filter across columns with result count
-- **Pagination** — Bottom bar by default; compact controls on mobile
+- **Real-time Search** — Local filter by default; pass `search={{ mode: "server", ... }}` only when the API owns the query
+- **Pagination** — Local paging by default; pass `pagination={{ mode: "server", ... }}` only when the API returns one page at a time
 - **Row Selection** — Multi-select (checkbox) or single-select (radio)
 - **Customizable Columns** — Text, number, HTML, action menu, custom `render`
 - **Mobile Layout** — Card/stack rows by default under 768px (`mobileLayout="table"` to keep the grid)
@@ -93,30 +93,181 @@ export default App;
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
-| `rows` | `Array<Object>` | Yes | `[]` | Row data |
+| `rows` | `Array<Object>` | Yes | `[]` | Row data. In `pagination.mode: "server"`, pass **only the current page** of rows (do not pass the full dataset). |
 | `columns` | `Array<Column>` | Yes | `[]` | Column config |
-| `pagination` | `Object` | No | See below | Pagination options |
+| `pagination` | `Object` | No | See below | Client or server pagination. Default is client-side (`mode: "client"`). |
+| `search` | `Object` | No | See below | Client or server search. Default is client-side (`mode: "client"`). |
 | `checkboxSelection` | `Object` | No | — | Selection config (checkbox or radio) |
 | `theme` | `Object` | No | — | Theme CSS variables |
 | `handleMenu` | `(row) => MenuItem[]` | No | — | Menu items for `type: "action"` columns |
 | `title` | `string \| null` | No | `"Search Table Data"` | Header title (`null` / `""` hides it) |
-| `showSearch` | `boolean` | No | `true` | Show search input |
+| `showSearch` | `boolean` | No | `true` | Show the search input |
 | `searchPlaceholder` | `string` | No | `"Search"` | Search placeholder |
-| `showResultCount` | `boolean` | No | `true` | Show “n of m results” |
+| `showResultCount` | `boolean` | No | `true` | Client: “filtered of loaded”. Server pagination: `totalCount` |
 | `maxHeight` | `string \| number` | No | — | Max height of table body (enables sticky header + vertical scroll) |
 | `height` | `string \| number` | No | — | Fixed height of table body (same sticky / vertical-scroll behavior) |
 | `mobileLayout` | `"cards" \| "table"` | No | `"cards"` | Mobile (≤768px) layout mode |
 | `sanitizeHtml` | `(html: string) => string` | No | — | Sanitizer for `type: "html"` cells |
-| `loading` | `boolean` | No | `false` | Show loading state |
+| `loading` | `boolean` | No | `false` | Show loading state in the table body. In server mode the pager stays visible so the user can change page while a request is in flight. |
 
 ### Pagination Object
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `showTopPagination` | `boolean` | `false` | Show pagination at the top |
-| `showBottomPagination` | `boolean` | `true` | Show pagination at the bottom |
-| `defaultPageSize` | `number` | `50` | Default page size |
-| `pageSizeOptions` | `Array<number>` | `[10, 50, 100, 500]` | Page size options |
+| `mode` | `"client" \| "server"` | `"client"` | `"client"`: table slices `rows` in the browser. `"server"`: `rows` is already one page; parent fetches and owns totals. |
+| `showTopPagination` | `boolean` | `false` | Show pagination above the table |
+| `showBottomPagination` | `boolean` | `true` | Show pagination below the table |
+| `defaultPageSize` | `number` | `50` | Initial page size in client mode. Fallback in server mode if `pageSize` is omitted. |
+| `pageSizeOptions` | `Array<number>` | `[10, 50, 100, 500]` | Values in the “per page” select. Include your current `pageSize`. |
+| `totalCount` | `number` | — | **Required in server mode.** Total rows across all pages (not `rows.length`). |
+| `page` | `number` | — | **Required in server mode.** Current page, **1-based** (`1` is the first page). |
+| `pageSize` | `number` | — | **Required in server mode.** Controlled page size. |
+| `onPageChange` | `(page: number) => void` | — | **Required in server mode.** Called with the next 1-based page. |
+| `onPageSizeChange` | `(pageSize: number) => void` | — | **Required in server mode.** Called with the next page size. Reset `page` to `1` here. |
+
+#### Client mode (`mode: "client"`, default)
+
+Pass the full (or already-filtered) list as `rows`. The table searches, slices, and keeps page/size internally. `defaultPageSize` and `pageSizeOptions` are enough:
+
+```jsx
+<DataTable
+  rows={allRows}
+  columns={columns}
+  pagination={{ defaultPageSize: 25, pageSizeOptions: [10, 25, 50] }}
+/>
+```
+
+#### Server mode (`mode: "server"`)
+
+Use this when the API returns one page at a time (same idea as `custom_pagination` on the older MUI table).
+
+| You pass | Table does |
+|----------|------------|
+| `rows` = **current page only** | Renders them as-is (no second slice) |
+| `totalCount` | Drives page count and “Showing X to Y of Z” |
+| `page` (1-based) + `pageSize` | Controls the pager and `#` column (`(page - 1) * pageSize + index + 1`) |
+| `onPageChange` / `onPageSizeChange` | Forwards clicks; does **not** keep its own page state |
+
+`mode: "server"` is **opt-in**. Omit `pagination`, or pass only `defaultPageSize` / `pageSizeOptions` / show flags, and the table still slices `rows` locally like before.
+
+This package is **1-based**. MUI `TablePagination` is **0-based**. If you migrate from `custom_pagination.page`, use `page + 1` when talking to DataTable, and `newPage` (already 1-based) when talking to your API if the API is 1-based — or convert explicitly.
+
+Keep `page` in range when `totalCount` shrinks. The table does not clamp server page for you.
+
+Typical fetch (pagination + search):
+
+```jsx
+const [page, setPage] = useState(1);       // 1-based
+const [pageSize, setPageSize] = useState(50);
+const [searchValue, setSearchValue] = useState('');
+const [appliedSearch, setAppliedSearch] = useState('');
+const [rows, setRows] = useState([]);
+const [totalCount, setTotalCount] = useState(0);
+const [loading, setLoading] = useState(false);
+
+useEffect(() => {
+  let cancelled = false;
+  setLoading(true);
+
+  fetchPage({ page, pageSize, search: appliedSearch }).then((result) => {
+    if (cancelled) return;
+    setRows(result.rows);           // one page
+    setTotalCount(result.totalCount);
+    setLoading(false);
+  });
+
+  return () => {
+    cancelled = true;
+  };
+}, [page, pageSize, appliedSearch]);
+
+<DataTable
+  rows={rows}
+  columns={columns}
+  loading={loading}
+  search={{
+    mode: 'server',
+    value: searchValue,
+    onChange: setSearchValue,
+    onSubmit: (value) => {
+      setPage(1);
+      setAppliedSearch(value);
+    },
+  }}
+  pagination={{
+    mode: 'server',
+    totalCount,
+    page,
+    pageSize,
+    onPageChange: setPage,
+    onPageSizeChange: (nextSize) => {
+      setPageSize(nextSize);
+      setPage(1);
+    },
+    pageSizeOptions: [10, 50, 100, 500],
+  }}
+/>
+```
+
+If your API uses 0-based pages, convert at the boundary:
+
+```jsx
+fetchPage({ page: page - 1, limit: pageSize });
+```
+
+### Search Object
+
+Same idea as pagination: client by default, `mode: "server"` when the API owns the query (replaces `custom_search` on the older MUI table).
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `mode` | `"client" \| "server"` | `"client"` | `"client"`: filter `rows` as the user types. `"server"`: controlled input; does **not** filter `rows`. |
+| `value` | `string` | — | **Required in server mode.** Controlled input value. |
+| `onChange` | `(value: string) => void` | — | **Required in server mode.** Called on each keystroke (and when Clear is clicked). |
+| `onSubmit` | `(value: string) => void` | — | Optional. Enter key and a **Search** button. Typical: set `page` to `1` and refetch. If omitted, fetch from `onChange` (or a debounce) in the parent. |
+
+`showSearch` / `searchPlaceholder` still control visibility and placeholder.
+
+`mode: "server"` is **opt-in**. Omit the `search` prop entirely and search stays local (filters `rows` as the user types), including when pagination is in server mode.
+
+#### Client mode (`search.mode: "client"`, default)
+
+Omit `search`. The table keeps the query internally and filters `rows` locally.
+
+#### Server mode (`search.mode: "server"`)
+
+| You pass | Table does |
+|----------|------------|
+| `value` + `onChange` | Controlled input (type and Clear) |
+| `onSubmit` (optional) | Enter + Search button; parent should refetch and reset page to `1` |
+| Already-filtered `rows` | No second client-side filter |
+
+Live search (fetch as the user types — debounce in the parent if needed):
+
+```jsx
+search={{
+  mode: 'server',
+  value: searchValue,
+  onChange: (value) => {
+    setSearchValue(value);
+    setPage(1);
+  },
+}}
+```
+
+Submit-to-search (same pattern as `custom_search.handleSubmit`):
+
+```jsx
+search={{
+  mode: 'server',
+  value: searchValue,
+  onChange: setSearchValue,
+  onSubmit: (value) => {
+    setPage(1);
+    setAppliedSearch(value);
+  },
+}}
+```
 
 ### CheckboxSelection Object
 
@@ -239,6 +390,38 @@ Omit `maxHeight` / `height` so the table grows with its rows. The page scrolls v
   columns={columns}
   mobileLayout="table"
   maxHeight={400}
+/>
+```
+
+### Server-side pagination and search
+
+See [Server mode](#server-mode-mode-server) and [Search Object](#search-object). Minimal usage:
+
+```jsx
+<DataTable
+  rows={currentPageRows}
+  columns={columns}
+  loading={loading}
+  search={{
+    mode: 'server',
+    value: searchValue,
+    onChange: setSearchValue,
+    onSubmit: (value) => {
+      setPage(1);
+      setAppliedSearch(value);
+    },
+  }}
+  pagination={{
+    mode: 'server',
+    totalCount,
+    page,
+    pageSize,
+    onPageChange: setPage,
+    onPageSizeChange: (nextSize) => {
+      setPageSize(nextSize);
+      setPage(1);
+    },
+  }}
 />
 ```
 

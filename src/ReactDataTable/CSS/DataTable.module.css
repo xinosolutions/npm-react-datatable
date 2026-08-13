@@ -49,6 +49,16 @@
   font-weight: 400;
 }
 
+.userDetailHead .searchForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 200px;
+  max-width: max-content;
+  margin-left: auto;
+}
+
 .userDetailHead .searchContainer {
   position: relative;
   display: flex;
@@ -57,6 +67,11 @@
   min-width: 200px;
   max-width: 300px;
   margin-left: auto;
+}
+
+.userDetailHead .searchForm .searchContainer {
+  margin-left: 0;
+  width: 300px;
 }
 
 .userDetailHead .searchContainer .searchIcon {
@@ -123,6 +138,28 @@
 
 .userDetailHead .searchContainer input:not(:placeholder-shown) {
   padding-right: 70px;
+}
+
+.searchSubmitButton {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--table-theme-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchSubmitButton:hover {
+  opacity: 0.92;
+}
+
+.searchSubmitButton:focus-visible {
+  outline: 2px solid var(--table-theme-color);
+  outline-offset: 2px;
 }
 
 .userDetailTable {
@@ -1012,6 +1049,7 @@
     align-items: stretch;
   }
 
+  .userDetailHead .searchForm,
   .userDetailHead .searchContainer {
     margin-left: 0;
     max-width: 100%;

@@ -16,6 +16,7 @@ const DataTable = ({
   rows = [],
   columns = [],
   pagination,
+  search: searchConfig,
   checkboxSelection,
   theme,
   handleMenu,
@@ -51,24 +52,55 @@ const DataTable = ({
   const radioGroupName = `${instanceId}-row-selection`;
 
   const {
+    mode: paginationMode = "client",
     showTopPagination = false,
     showBottomPagination = true,
     defaultPageSize = 50,
     pageSizeOptions = [10, 50, 100, 500],
+    totalCount: serverTotalCount,
+    page: serverPage,
+    pageSize: serverPageSize,
+    onPageChange: onServerPageChange,
+    onPageSizeChange: onServerPageSizeChange,
   } = pagination || {};
 
-  const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
+  const isServerPagination = paginationMode === "server";
+
+  const {
+    mode: searchMode = "client",
+    value: serverSearchValue,
+    onChange: onServerSearchChange,
+    onSubmit: onServerSearchSubmit,
+  } = searchConfig || {};
+
+  const isServerSearch = searchMode === "server";
+
+  const [internalSearch, setInternalSearch] = useState("");
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(defaultPageSize);
+
+  const pageSize = isServerPagination
+    ? (serverPageSize ?? defaultPageSize)
+    : internalPageSize;
+  const safePageSize = pageSize > 0 ? pageSize : defaultPageSize;
+  const currentPage = isServerPagination ? (serverPage ?? 1) : internalPage;
+  const resolvedPageSizeOptions = pageSizeOptions.includes(safePageSize)
+    ? pageSizeOptions
+    : [...pageSizeOptions, safePageSize].sort((a, b) => a - b);
 
   const visibleColumns = useMemo(() => {
     if (!isMobile) return columns;
     return columns.filter((col) => !col.hideOnMobile);
   }, [columns, isMobile]);
 
+  const searchValue = isServerSearch
+    ? (serverSearchValue ?? "")
+    : internalSearch;
+
   const filteredRows = useMemo(() => {
-    if (!search.trim()) return rows;
-    const searchLower = search.toLowerCase();
+    if (isServerSearch) return rows;
+    if (!searchValue.trim()) return rows;
+    const searchLower = searchValue.toLowerCase();
     return rows.filter((row) =>
       columns.some((col) => {
         if (!col.key || row[col.key] === undefined || row[col.key] === null) {
@@ -78,7 +110,7 @@ const DataTable = ({
         return cellValue.toLowerCase().includes(searchLower);
       }),
     );
-  }, [rows, search, columns]);
+  }, [rows, searchValue, columns, isServerSearch]);
 
   /*
    * Single layout model (covers all reported width issues):
@@ -92,32 +124,74 @@ const DataTable = ({
     : `repeat(${visibleColumns.length}, auto)`;
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
+    if (isServerPagination || isServerSearch) return;
+    setInternalPage(1);
+  }, [searchValue, isServerPagination, isServerSearch]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [pageSize]);
+    if (isServerPagination) return;
+    setInternalPage(1);
+  }, [safePageSize, isServerPagination]);
 
-  const totalRecords = filteredRows.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize - 1, totalRecords - 1);
-  const paginatedRows = filteredRows.slice(startIndex, endIndex + 1);
+  const totalRecords = isServerPagination
+    ? (serverTotalCount ?? 0)
+    : filteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / safePageSize) || 1);
+  const startIndex = (currentPage - 1) * safePageSize;
+  const pageRowCount = isServerPagination
+    ? filteredRows.length
+    : Math.min(safePageSize, Math.max(0, totalRecords - startIndex));
+  const endIndex =
+    pageRowCount === 0 ? startIndex : startIndex + pageRowCount - 1;
+  const paginatedRows = isServerPagination
+    ? filteredRows
+    : filteredRows.slice(startIndex, endIndex + 1);
 
   useEffect(() => {
+    if (isServerPagination) return;
     if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
+      setInternalPage(totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, isServerPagination]);
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    if (isServerPagination) {
+      onServerPageChange?.(page);
+      return;
+    }
+    setInternalPage(page);
   };
 
   const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize);
+    if (isServerPagination) {
+      onServerPageSizeChange?.(newPageSize);
+      return;
+    }
+    setInternalPageSize(newPageSize);
   };
+
+  const handleSearchChange = (nextValue) => {
+    if (isServerSearch) {
+      onServerSearchChange?.(nextValue);
+      return;
+    }
+    setInternalSearch(nextValue);
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    if (isServerSearch) {
+      onServerSearchSubmit?.(searchValue);
+    }
+  };
+
+  const handleSearchClear = () => {
+    handleSearchChange("");
+  };
+
+  const isEmptyFromSearch = isServerSearch
+    ? searchValue.trim().length > 0
+    : rows.length > 0;
 
   const themeStyles = useMemo(() => {
     const stylesObj = {};
@@ -137,6 +211,30 @@ const DataTable = ({
   }, [maxHeight, height]);
 
   const searchInputId = `${instanceId}-searchInput`;
+
+  const searchField = (
+    <div className={styles.searchContainer}>
+      <input
+        id={searchInputId}
+        type="text"
+        placeholder={searchPlaceholder}
+        value={searchValue}
+        onChange={(e) => handleSearchChange(e.target.value)}
+        aria-label="Search table data"
+      />
+      <SearchIcon className={styles.searchIcon} />
+      {searchValue ? (
+        <button
+          className={styles.clearButton}
+          onClick={handleSearchClear}
+          aria-label="Clear search"
+          type="button"
+        >
+          <ClearIcon />
+        </button>
+      ) : null}
+    </div>
+  );
 
   const renderCellContent = (col, row, actualRowIndex) => {
     if (col.type === "action") {
@@ -232,7 +330,7 @@ const DataTable = ({
   const renderCardRows = () => {
     if (loading) return renderLoadingState();
     if (filteredRows.length === 0) {
-      return renderEmptyState(rows.length > 0);
+      return renderEmptyState(isEmptyFromSearch);
     }
 
     return paginatedRows.map((row, rowIndex) => {
@@ -283,7 +381,7 @@ const DataTable = ({
   const renderTableRows = () => {
     if (loading) return renderLoadingState();
     if (filteredRows.length === 0) {
-      return renderEmptyState(rows.length > 0);
+      return renderEmptyState(isEmptyFromSearch);
     }
 
     return paginatedRows.map((row, rowIndex) => {
@@ -335,54 +433,54 @@ const DataTable = ({
   const paginationProps = {
     currentPage,
     totalPages,
-    pageSize,
+    pageSize: safePageSize,
     totalRecords,
     onPageChange: handlePageChange,
     onPageSizeChange: handlePageSizeChange,
     startIndex,
     endIndex,
-    pageSizeOptions,
+    pageSizeOptions: resolvedPageSizeOptions,
     instanceId,
   };
+
+  const showPaginationBar = totalRecords > 0 && (!loading || isServerPagination);
 
   return (
     <div className={styles.userDetail} style={themeStyles}>
       <div className={styles.userDetailHead}>
         <div className={styles.titleSection}>
           {title ? <h2 className={styles.title}>{title}</h2> : null}
-          {showResultCount && rows.length > 0 && (
+          {showResultCount &&
+            (isServerPagination
+              ? (serverTotalCount ?? 0) > 0
+              : rows.length > 0) && (
             <span className={styles.resultCount}>
-              {filteredRows.length} of {rows.length}{" "}
-              {filteredRows.length === 1 ? "result" : "results"}
+              {isServerPagination
+                ? `${serverTotalCount} ${
+                    serverTotalCount === 1 ? "result" : "results"
+                  }`
+                : `${filteredRows.length} of ${rows.length} ${
+                    filteredRows.length === 1 ? "result" : "results"
+                  }`}
             </span>
           )}
         </div>
-        {showSearch && (
-          <div className={styles.searchContainer}>
-            <input
-              id={searchInputId}
-              type="text"
-              placeholder={searchPlaceholder}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search table data"
-            />
-            <SearchIcon className={styles.searchIcon} />
-            {search && (
-              <button
-                className={styles.clearButton}
-                onClick={() => setSearch("")}
-                aria-label="Clear search"
-                type="button"
-              >
-                <ClearIcon />
-              </button>
-            )}
-          </div>
-        )}
+        {showSearch &&
+          (isServerSearch ? (
+            <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+              {searchField}
+              {onServerSearchSubmit ? (
+                <button type="submit" className={styles.searchSubmitButton}>
+                  Search
+                </button>
+              ) : null}
+            </form>
+          ) : (
+            searchField
+          ))}
       </div>
 
-      {showTopPagination && totalRecords > 0 && !loading && (
+      {showTopPagination && showPaginationBar && (
         <div className={styles.paginationWrapper}>
           <Pagination {...paginationProps} instanceId={`${instanceId}-top`} />
         </div>
@@ -417,7 +515,7 @@ const DataTable = ({
         )}
       </div>
 
-      {showBottomPagination && totalRecords > 0 && !loading && (
+      {showBottomPagination && showPaginationBar && (
         <div
           className={`${styles.paginationWrapper} ${styles.paginationWrapperBottom}`}
         >
