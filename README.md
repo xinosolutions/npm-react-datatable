@@ -23,8 +23,9 @@ This package is part of our open-source initiative to contribute valuable tools 
 
 ## Features
 
-- **Real-time Search** — Local filter by default; pass `search={{ mode: "server", ... }}` only when the API owns the query
-- **Pagination** — Local paging by default; pass `pagination={{ mode: "server", ... }}` only when the API returns one page at a time
+- **Real-time Search** — Pill search on the right (Tasks-style); local filter by default; `search={{ mode: "server", ... }}` when the API owns the query
+- **Toolbar filters** — Optional `toolbarLeft` for filter pills that share search height (`xs-datatable-toolbar-control`)
+- **Pagination** — Bottom pager only; local by default; `pagination={{ mode: "server", ... }}` when the API returns one page at a time
 - **Row Selection** — Multi-select (checkbox) or single-select (radio)
 - **Customizable Columns** — Text, number, HTML, action menu, custom `render`
 - **Mobile Layout** — Card/stack rows by default under 768px (`mobileLayout="table"` to keep the grid)
@@ -100,10 +101,9 @@ export default App;
 | `checkboxSelection` | `Object` | No | — | Selection config (checkbox or radio) |
 | `theme` | `Object` | No | — | Theme CSS variables |
 | `handleMenu` | `(row) => MenuItem[]` | No | — | Menu items for `type: "action"` columns |
-| `title` | `string \| null` | No | `"Search Table Data"` | Header title (`null` / `""` hides it) |
-| `showSearch` | `boolean` | No | `true` | Show the search input |
+| `showSearch` | `boolean` | No | `true` | Show the search input (right side of toolbar) |
 | `searchPlaceholder` | `string` | No | `"Search"` | Search placeholder |
-| `showResultCount` | `boolean` | No | `true` | Client: “filtered of loaded”. Server pagination: `totalCount` |
+| `toolbarLeft` | `ReactNode` | No | — | Optional left toolbar (filters). Match height with `xs-datatable-toolbar-control` or `var(--dt-control-height)` |
 | `maxHeight` | `string \| number` | No | — | Max height of table body (enables sticky header + vertical scroll) |
 | `height` | `string \| number` | No | — | Fixed height of table body (same sticky / vertical-scroll behavior) |
 | `mobileLayout` | `"cards" \| "table"` | No | `"cards"` | Mobile (≤768px) layout mode |
@@ -115,7 +115,6 @@ export default App;
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `mode` | `"client" \| "server"` | `"client"` | `"client"`: table slices `rows` in the browser. `"server"`: `rows` is already one page; parent fetches and owns totals. |
-| `showTopPagination` | `boolean` | `false` | Show pagination above the table |
 | `showBottomPagination` | `boolean` | `true` | Show pagination below the table |
 | `defaultPageSize` | `number` | `50` | Initial page size in client mode. Fallback in server mode if `pageSize` is omitted. |
 | `pageSizeOptions` | `Array<number>` | `[10, 50, 100, 500]` | Values in the “per page” select. Include your current `pageSize`. |
@@ -429,7 +428,6 @@ See [Server mode](#server-mode-mode-server) and [Search Object](#search-object).
 
 ```jsx
 <DataTable
-  title="Customers"
   showSearch
   searchPlaceholder="Find a customer…"
   rows={rows}

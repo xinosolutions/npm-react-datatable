@@ -45,7 +45,6 @@ export interface PaginationConfig {
    * `"server"` treats `rows` as the current page; parent owns fetch + totals.
    */
   mode?: PaginationMode;
-  showTopPagination?: boolean;
   showBottomPagination?: boolean;
   defaultPageSize?: number;
   pageSizeOptions?: number[];
@@ -88,10 +87,14 @@ export interface DataTableProps<Row = Record<string, unknown>> {
   checkboxSelection?: CheckboxSelectionConfig<Row>;
   theme?: DataTableTheme;
   handleMenu?: (row: Row) => MenuItem<Row>[];
-  title?: string | null;
   showSearch?: boolean;
   searchPlaceholder?: string;
-  showResultCount?: boolean;
+  /**
+   * Optional left-side toolbar content (e.g. filter pills).
+   * Placed in the same row as search; use height `var(--dt-control-height)`
+   * or class `xs-datatable-toolbar-control` so controls match search height.
+   */
+  toolbarLeft?: ReactNode;
   /**
    * Constrain table body height. When set (with or without `height`), enables
    * sticky header + internal vertical scroll. Omit both for natural height:

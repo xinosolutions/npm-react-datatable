@@ -73,13 +73,13 @@ function ServerPagedUsers({ columns, handleMenu }) {
 
   return (
     <DataTable
-      title="Users (server pagination)"
       rows={rows}
       columns={columns}
       loading={loading}
       maxHeight={420}
       mobileLayout="cards"
       theme={{ "--table-theme-color": "#4FAFA0" }}
+      searchPlaceholder="Search"
       search={{
         mode: "server",
         value: searchValue,
@@ -297,18 +297,27 @@ function App() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32, padding: 16 }}>
       <DataTable
-        title="Users"
         rows={rows}
         columns={columns}
         maxHeight={420}
         mobileLayout="cards"
         theme={{ "--table-theme-color": "#4FAFA0" }}
         pagination={{
-          showTopPagination: false,
           showBottomPagination: true,
           defaultPageSize: 10,
           pageSizeOptions: [5, 10, 25, 50],
         }}
+        toolbarLeft={
+          <>
+            <button type="button" className="xs-datatable-toolbar-control">
+              All statuses
+            </button>
+            <button type="button" className="xs-datatable-toolbar-control">
+              All priorities
+            </button>
+          </>
+        }
+        searchPlaceholder="Search"
         checkboxSelection={{ selected, setSelected, selectBy: "_id" }}
         handleMenu={handleMenu}
       />
