@@ -27,7 +27,7 @@ const ALL_SERVER_USERS = Array.from({ length: 87 }, (_, i) => ({
   country: "USA",
 }));
 
-function fetchUsersPage(page, pageSize, query = "") {
+function fetchUsersPage(page, pageSize, query = "", sortBy = "name", sortDirection = "asc") {
   return new Promise((resolve) => {
     window.setTimeout(() => {
       const q = query.trim().toLowerCase();
@@ -38,7 +38,17 @@ function fetchUsersPage(page, pageSize, query = "") {
               .toLowerCase()
               .includes(q),
           )
-        : ALL_SERVER_USERS;
+        : [...ALL_SERVER_USERS];
+
+      const dir = sortDirection === "desc" ? -1 : 1;
+      filtered.sort((a, b) => {
+        const av = String(a[sortBy] ?? "").toLowerCase();
+        const bv = String(b[sortBy] ?? "").toLowerCase();
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+
       const start = (page - 1) * pageSize;
       resolve({
         rows: filtered.slice(start, start + pageSize),
@@ -53,6 +63,8 @@ function ServerPagedUsers({ columns, handleMenu }) {
   const [pageSize, setPageSize] = useState(10);
   const [searchValue, setSearchValue] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
   const [rows, setRows] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -60,16 +72,18 @@ function ServerPagedUsers({ columns, handleMenu }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    fetchUsersPage(page, pageSize, appliedSearch).then((result) => {
-      if (cancelled) return;
-      setRows(result.rows);
-      setTotalCount(result.totalCount);
-      setLoading(false);
-    });
+    fetchUsersPage(page, pageSize, appliedSearch, sortBy, sortDirection).then(
+      (result) => {
+        if (cancelled) return;
+        setRows(result.rows);
+        setTotalCount(result.totalCount);
+        setLoading(false);
+      },
+    );
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, appliedSearch]);
+  }, [page, pageSize, appliedSearch, sortBy, sortDirection]);
 
   return (
     <DataTable
@@ -87,6 +101,16 @@ function ServerPagedUsers({ columns, handleMenu }) {
         onSubmit: (value) => {
           setPage(1);
           setAppliedSearch(value);
+        },
+      }}
+      sorting={{
+        mode: "server",
+        sortBy,
+        sortDirection,
+        onSortChange: (nextBy, nextDir) => {
+          setSortBy(nextBy);
+          setSortDirection(nextDir);
+          setPage(1);
         },
       }}
       pagination={{
@@ -247,7 +271,7 @@ function App() {
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
     { key: "phone_number", label: "Phone Number", hideOnMobile: true },
-    { key: "address", label: "Address" },
+    { key: "address", label: "Address", disableSort: true },
     { key: "department", label: "Department" },
     { key: "status", label: "Status" },
     { key: "role", label: "Role" },

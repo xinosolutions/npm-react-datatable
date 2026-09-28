@@ -16,11 +16,55 @@ export interface DataTableColumn<Row = Record<string, unknown>> {
   type?: "number" | "html" | "action" | string;
   hideOnMobile?: boolean;
   render?: (row: Row, index: number) => ReactNode;
+  /**
+   * Column-level sort override. Wins over table `sorting.disableSort`
+   * and over default exclusions (`action`, `number`, `html`).
+   * `true` enables sort even when the table/type would disable it.
+   * `false` disables sort even when the table has sorting enabled.
+   */
+  sortable?: boolean;
+  /** Same as `sortable: false`. Wins over table-level enable. */
+  disableSort?: boolean;
+  /** Hide sort arrows for this column (column still sortable unless disabled). */
+  hideSorting?: boolean;
 }
 
 export type PaginationMode = "client" | "server";
 
 export type SearchMode = "client" | "server";
+
+export type SortingMode = "client" | "server";
+
+export type SortDirection = "asc" | "desc";
+
+export interface SortingConfig {
+  /**
+   * `"client"` (default): sort `rows` locally.
+   * `"server"`: controlled sort; parent owns fetch. Does not sort `rows`.
+   */
+  mode?: SortingMode;
+  /**
+   * When `true`, sorting is off for all columns unless a column sets
+   * `sortable: true` (or `disableSort: false`).
+   */
+  disableSort?: boolean;
+  /**
+   * When `false`, same as `disableSort: true`. Default is enabled.
+   */
+  enabled?: boolean;
+  /** Hide sort arrows globally (columns can override with `hideSorting: false`). */
+  hideSorting?: boolean;
+  /** Initial sort column key (client mode). Defaults to the first sortable column. */
+  defaultSortBy?: string;
+  /** Initial sort direction (client mode). Default `"asc"`. */
+  defaultSortDirection?: SortDirection;
+  /** Server mode: controlled sort column key. */
+  sortBy?: string;
+  /** Server mode: controlled sort direction. */
+  sortDirection?: SortDirection;
+  /** Called whenever the user clicks a sortable header (client and server). */
+  onSortChange?: (sortBy: string, sortDirection: SortDirection) => void;
+}
 
 export interface SearchConfig {
   /**
@@ -84,6 +128,8 @@ export interface DataTableProps<Row = Record<string, unknown>> {
   columns: DataTableColumn<Row>[];
   pagination?: PaginationConfig;
   search?: SearchConfig;
+  /** Sorting config. Default is client-side, sorted by the first sortable column. */
+  sorting?: SortingConfig;
   checkboxSelection?: CheckboxSelectionConfig<Row>;
   theme?: DataTableTheme;
   handleMenu?: (row: Row) => MenuItem<Row>[];

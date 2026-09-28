@@ -4,7 +4,7 @@
   
   # @xinosolutions/react-datatable
   
-  A modern React DataTable with search, pagination, row selection, mobile card layout, and theming.
+  A modern React DataTable with search, pagination, sorting, row selection, mobile card layout, and theming.
   
   [![npm version](https://img.shields.io/npm/v/@xinosolutions/react-datatable.svg)](https://www.npmjs.com/package/@xinosolutions/react-datatable)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -24,6 +24,7 @@ This package is part of our open-source initiative to contribute valuable tools 
 ## Features
 
 - **Real-time Search** — Pill search on the right (Tasks-style); local filter by default; `search={{ mode: "server", ... }}` when the API owns the query
+- **Column Sorting** — Clickable headers with arrows; defaults to the first sortable column; table + column `disableSort` / `sortable` overrides
 - **Toolbar filters** — Optional `toolbarLeft` for filter pills that share search height (`xs-datatable-toolbar-control`)
 - **Pagination** — Bottom pager only; local by default; `pagination={{ mode: "server", ... }}` when the API returns one page at a time
 - **Row Selection** — Multi-select (checkbox) or single-select (radio)
@@ -98,6 +99,7 @@ export default App;
 | `columns` | `Array<Column>` | Yes | `[]` | Column config |
 | `pagination` | `Object` | No | See below | Client or server pagination. Default is client-side (`mode: "client"`). |
 | `search` | `Object` | No | See below | Client or server search. Default is client-side (`mode: "client"`). |
+| `sorting` | `Object` | No | See below | Client or server sorting. Default is client-side; sorts by the first sortable column. |
 | `checkboxSelection` | `Object` | No | — | Selection config (checkbox or radio) |
 | `theme` | `Object` | No | — | Theme CSS variables |
 | `handleMenu` | `(row) => MenuItem[]` | No | — | Menu items for `type: "action"` columns |
@@ -268,6 +270,78 @@ search={{
 }}
 ```
 
+### Sorting Object
+
+Sorting is **on by default**. The table sorts by the **first sortable column** (`asc`) unless you set `defaultSortBy`. Columns with a `key` are sortable; `type: "number"`, `type: "action"`, and `type: "html"` are not (opt in with `sortable: true` if needed).
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `mode` | `"client" \| "server"` | `"client"` | `"client"`: sort `rows` in the browser. `"server"`: controlled; parent owns fetch. |
+| `disableSort` | `boolean` | `false` | Disable sorting for all columns (unless a column sets `sortable: true`). |
+| `enabled` | `boolean` | `true` | When `false`, same as `disableSort: true`. |
+| `hideSorting` | `boolean` | `false` | Hide sort arrows globally (column can override with `hideSorting: false`). |
+| `defaultSortBy` | `string` | first sortable key | Initial sort column (client mode). |
+| `defaultSortDirection` | `"asc" \| "desc"` | `"asc"` | Initial direction (client mode). |
+| `sortBy` | `string` | — | **Server mode:** controlled sort column key. |
+| `sortDirection` | `"asc" \| "desc"` | — | **Server mode:** controlled direction. |
+| `onSortChange` | `(sortBy, sortDirection) => void` | — | Fires on every sort click (client and server). In server mode, parent should update `sortBy` / `sortDirection` and refetch. |
+
+#### Table vs column overrides
+
+Column options **always win**:
+
+| Table | Column | Result |
+|-------|--------|--------|
+| `disableSort: true` | `sortable: true` | That column **is** sortable |
+| sorting enabled | `disableSort: true` (or `sortable: false`) | That column **is not** sortable |
+
+```jsx
+// Disable sort everywhere, then enable Name only
+<DataTable
+  rows={rows}
+  columns={[
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'email', label: 'Email' },
+  ]}
+  sorting={{ disableSort: true }}
+/>
+
+// Enable sort everywhere, disable Email only
+<DataTable
+  rows={rows}
+  columns={[
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email', disableSort: true },
+  ]}
+/>
+
+// Hide arrows (click-to-sort still works unless disableSort)
+<DataTable rows={rows} columns={columns} sorting={{ hideSorting: true }} />
+```
+
+#### Server mode
+
+```jsx
+const [sortBy, setSortBy] = useState('name');
+const [sortDirection, setSortDirection] = useState('asc');
+
+<DataTable
+  rows={rows}
+  columns={columns}
+  sorting={{
+    mode: 'server',
+    sortBy,
+    sortDirection,
+    onSortChange: (nextBy, nextDir) => {
+      setSortBy(nextBy);
+      setSortDirection(nextDir);
+      setPage(1);
+    },
+  }}
+  pagination={{ mode: 'server', /* ... */ }}
+/>
+```
+
 ### CheckboxSelection Object
 
 | Property | Type | Required | Description |
@@ -292,6 +366,9 @@ search={{
 | `type` | `"number" \| "html" \| "action"` | Special column types |
 | `hideOnMobile` | `boolean` | Hide column under 768px |
 | `render` | `(row, index) => ReactNode` | Custom cell renderer |
+| `sortable` | `boolean` | Column sort override (wins over table `disableSort`) |
+| `disableSort` | `boolean` | Disable sort for this column (`sortable: false`) |
+| `hideSorting` | `boolean` | Hide sort arrows for this column |
 
 ---
 

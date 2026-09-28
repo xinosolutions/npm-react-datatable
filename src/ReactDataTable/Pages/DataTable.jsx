@@ -6,12 +6,14 @@ import TableBody from "../Components/TableBody";
 import Pagination from "../Components/Pagination";
 import useInstanceId from "../utils/useInstanceId";
 import useMediaQuery from "../utils/useMediaQuery";
+import useTableSorting from "../utils/useTableSorting";
 
 const DataTable = ({
   rows = [],
   columns = [],
   pagination,
   search: searchConfig,
+  sorting: sortingConfig,
   checkboxSelection,
   theme,
   handleMenu,
@@ -91,6 +93,19 @@ const DataTable = ({
     ? (serverSearchValue ?? "")
     : internalSearch;
 
+  const {
+    tableSorting,
+    sortBy,
+    sortDirection,
+    handleSort,
+    applyClientSort,
+  } = useTableSorting({
+    sorting: sortingConfig,
+    columns,
+    isServerPagination,
+    setInternalPage,
+  });
+
   const filteredRows = useMemo(() => {
     if (isServerSearch) return rows;
     if (!searchValue.trim()) return rows;
@@ -105,6 +120,11 @@ const DataTable = ({
       }),
     );
   }, [rows, searchValue, columns, isServerSearch]);
+
+  const sortedRows = useMemo(
+    () => applyClientSort(filteredRows),
+    [filteredRows, applyClientSort],
+  );
 
   /*
    * Single layout model (covers all reported width issues):
@@ -129,17 +149,17 @@ const DataTable = ({
 
   const totalRecords = isServerPagination
     ? (serverTotalCount ?? 0)
-    : filteredRows.length;
+    : sortedRows.length;
   const totalPages = Math.max(1, Math.ceil(totalRecords / safePageSize) || 1);
   const startIndex = (currentPage - 1) * safePageSize;
   const pageRowCount = isServerPagination
-    ? filteredRows.length
+    ? sortedRows.length
     : Math.min(safePageSize, Math.max(0, totalRecords - startIndex));
   const endIndex =
     pageRowCount === 0 ? startIndex : startIndex + pageRowCount - 1;
   const paginatedRows = isServerPagination
-    ? filteredRows
-    : filteredRows.slice(startIndex, endIndex + 1);
+    ? sortedRows
+    : sortedRows.slice(startIndex, endIndex + 1);
 
   useEffect(() => {
     if (isServerPagination) return;
@@ -224,7 +244,7 @@ const DataTable = ({
   const bodyProps = {
     useCards,
     loading,
-    filteredRows,
+    filteredRows: sortedRows,
     paginatedRows,
     visibleColumns,
     startIndex,
@@ -276,6 +296,10 @@ const DataTable = ({
               selectBy={selectBy}
               hasCheckboxSelection={hasCheckboxSelection}
               selectionMode={selectionMode}
+              sorting={tableSorting}
+              sortBy={sortBy}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
             <TableBody {...bodyProps} />
           </div>

@@ -435,6 +435,48 @@
   background-color: #f1f5f9;
 }
 
+.tableHeadSortable {
+  cursor: pointer;
+}
+
+.sortButton,
+.sortLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+
+.sortButton:focus,
+.sortButton:focus-visible,
+.sortButton:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.sortIcon {
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: #94a3b8;
+  opacity: 0.85;
+}
+
+.sortIconActive {
+  color: var(--table-theme-color);
+  opacity: 1;
+}
+
 /* Sticky selection column for horizontal scroll */
 .stickyCol {
   position: sticky;
