@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from
 import { createPortal } from "react-dom";
 import styles from "../CSS/DataTable.module.css";
 import MenuIcon from "./Icons/MenuIcon";
+import { resolveMenuIcon, hasMenuIcon } from "../utils/resolveMenuIcon";
 
 const MenuDropdown = ({ menuItems, row, rowIndex }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -148,9 +149,7 @@ const MenuDropdown = ({ menuItems, row, rowIndex }) => {
     return null;
   }
 
-  const hasAnyIcon = menuItems.some(
-    (item) => item.icon != null && item.icon !== false,
-  );
+  const hasAnyIcon = menuItems.some((item) => hasMenuIcon(item.icon));
 
   const dropdownContent = isOpen ? (
     <div
@@ -181,7 +180,7 @@ const MenuDropdown = ({ menuItems, row, rowIndex }) => {
         >
           {hasAnyIcon ? (
             <span className={styles.menuItemIcon} aria-hidden="true">
-              {item.icon != null && item.icon !== false ? item.icon : null}
+              {resolveMenuIcon(item.icon)}
             </span>
           ) : null}
           <span className={styles.menuItemLabel}>{item.label}</span>

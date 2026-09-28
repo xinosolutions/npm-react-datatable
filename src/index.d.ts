@@ -114,12 +114,113 @@ export interface DataTableTheme {
   "--table-theme-color"?: string;
 }
 
+export type ActionStyle = "menu" | "buttons";
+
+export type MenuItemTonePreset =
+  | "neutral"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger";
+
+/**
+ * Preset tone, or any CSS color string (`"red"`, `"#000"`, `"rgb(3,105,161)"`).
+ * Custom colors tint the button background/border from that value.
+ */
+export type MenuItemTone = MenuItemTonePreset | (string & {});
+
+/**
+ * Built-in Lucide-style action icon names.
+ * Aliases also work (e.g. `"delete"` → trash, `"people"` → users).
+ */
+export type ActionIconName =
+  | "edit"
+  | "trash"
+  | "eye"
+  | "eye-off"
+  | "users"
+  | "user"
+  | "file"
+  | "copy"
+  | "download"
+  | "upload"
+  | "print"
+  | "search"
+  | "settings"
+  | "filter"
+  | "plus"
+  | "minus"
+  | "check"
+  | "x"
+  | "refresh"
+  | "link"
+  | "external-link"
+  | "mail"
+  | "phone"
+  | "calendar"
+  | "clock"
+  | "lock"
+  | "unlock"
+  | "star"
+  | "bookmark"
+  | "archive"
+  | "share"
+  | "info"
+  | "alert"
+  | "ban"
+  | "play"
+  | "pause"
+  | "duplicate"
+  | "clipboard"
+  | "tag"
+  | "image"
+  | "grid"
+  | "list"
+  | "more-horizontal"
+  | "more-vertical"
+  | "send"
+  | "save"
+  | "home"
+  | "pencil"
+  | "delete"
+  | "remove"
+  | "view"
+  | "people"
+  | "group"
+  | "document"
+  | "doc"
+  | "add"
+  | "close"
+  | "cancel"
+  | "warning"
+  | "reload"
+  | "sync"
+  | "gear"
+  | "cog"
+  | "open"
+  | "email"
+  | "clone";
+
 export interface MenuItem<Row = Record<string, unknown>> {
   label: ReactNode;
-  /** Optional icon (SVG, emoji, or any React node) shown before the label. */
-  icon?: ReactNode;
+  /**
+   * Built-in icon name (`"edit"`), alias (`"delete"`), or any React node (SVG/emoji).
+   * See README for the full built-in icon list.
+   */
+  icon?: ActionIconName | ReactNode;
   /** Renders the item in a destructive/danger style. */
   danger?: boolean;
+  /**
+   * Color for `actionStyle="buttons"`: a preset (`info`, `danger`, …)
+   * or any CSS color (`"red"`, `"#0369a1"`). Defaults to `"neutral"`,
+   * or `"danger"` when `danger` is true.
+   */
+  tone?: MenuItemTone;
+  /** Solid fill for buttons mode (currently pairs with danger). */
+  emphasized?: boolean;
+  disabled?: boolean;
+  /** Tooltip / `title` in buttons mode. Defaults to string `label`. */
+  tooltip?: string;
   onClick?: (row: Row, rowIndex: number) => void;
 }
 
@@ -133,6 +234,11 @@ export interface DataTableProps<Row = Record<string, unknown>> {
   checkboxSelection?: CheckboxSelectionConfig<Row>;
   theme?: DataTableTheme;
   handleMenu?: (row: Row) => MenuItem<Row>[];
+  /**
+   * How `type: "action"` columns render.
+   * `"menu"` (default): 3-dot dropdown. `"buttons"`: inline colored icon buttons.
+   */
+  actionStyle?: ActionStyle;
   showSearch?: boolean;
   searchPlaceholder?: string;
   /**
@@ -166,5 +272,14 @@ declare const DataTable: <Row = Record<string, unknown>>(
   props: DataTableProps<Row>,
 ) => ReactElement | null;
 
-export { DataTable };
+declare const ActionIcon: (props: {
+  name: ActionIconName | string;
+  className?: string;
+  [key: string]: unknown;
+}) => ReactElement | null;
+
+declare const ACTION_ICON_NAMES: string[];
+declare const ACTION_ICON_ALIASES: Record<string, string>;
+
+export { DataTable, ActionIcon, ACTION_ICON_NAMES, ACTION_ICON_ALIASES };
 export default DataTable;

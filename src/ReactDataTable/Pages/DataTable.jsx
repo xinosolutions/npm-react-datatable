@@ -17,6 +17,8 @@ const DataTable = ({
   checkboxSelection,
   theme,
   handleMenu,
+  /** `"menu"` (default 3-dot) or `"buttons"` (inline colored icon actions). */
+  actionStyle = "menu",
   showSearch = true,
   searchPlaceholder = "Search",
   /** Optional left-side toolbar content (filters). Shares control height with search. */
@@ -256,6 +258,7 @@ const DataTable = ({
     selectBy,
     radioGroupName,
     handleMenu,
+    actionStyle: actionStyle === "buttons" ? "buttons" : "menu",
     sanitizeHtml,
   };
 

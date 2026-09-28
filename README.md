@@ -28,7 +28,7 @@ This package is part of our open-source initiative to contribute valuable tools 
 - **Toolbar filters** — Optional `toolbarLeft` for filter pills that share search height (`xs-datatable-toolbar-control`)
 - **Pagination** — Bottom pager only; local by default; `pagination={{ mode: "server", ... }}` when the API returns one page at a time
 - **Row Selection** — Multi-select (checkbox) or single-select (radio)
-- **Customizable Columns** — Text, number, HTML, action menu, custom `render`
+- **Customizable Columns** — Text, number, HTML, action menu or icon buttons, custom `render`
 - **Mobile Layout** — Card/stack rows by default under 768px (`mobileLayout="table"` to keep the grid)
 - **Sticky Header** — Enabled when `maxHeight` / `height` constrains the table body
 - **Natural height** — Omit both height props for page-level vertical scroll (horizontal scroll only inside the table)
@@ -102,7 +102,8 @@ export default App;
 | `sorting` | `Object` | No | See below | Client or server sorting. Default is client-side; sorts by the first sortable column. |
 | `checkboxSelection` | `Object` | No | — | Selection config (checkbox or radio) |
 | `theme` | `Object` | No | — | Theme CSS variables |
-| `handleMenu` | `(row) => MenuItem[]` | No | — | Menu items for `type: "action"` columns |
+| `handleMenu` | `(row) => MenuItem[]` | No | — | Action items for `type: "action"` columns |
+| `actionStyle` | `"menu" \| "buttons"` | No | `"menu"` | `"menu"`: 3-dot dropdown. `"buttons"`: inline colored icon buttons |
 | `showSearch` | `boolean` | No | `true` | Show the search input (right side of toolbar) |
 | `searchPlaceholder` | `string` | No | `"Search"` | Search placeholder |
 | `toolbarLeft` | `ReactNode` | No | — | Optional left toolbar (filters). Match height with `xs-datatable-toolbar-control` or `var(--dt-control-height)` |
@@ -391,21 +392,81 @@ const columns = [
 const handleMenu = (row) => [
   {
     label: 'Edit',
-    icon: <EditIcon />, // any React node (SVG, emoji, icon component)
+    icon: 'edit', // built-in name — or pass a custom React node
+    tone: 'info', // used when actionStyle="buttons"
     onClick: () => edit(row),
   },
   {
+    label: 'People',
+    icon: 'people', // alias for "users"
+    tone: 'neutral',
+    onClick: () => openRoster(row),
+  },
+  {
     label: 'Delete',
-    icon: <TrashIcon />,
-    danger: true, // optional destructive styling
+    icon: 'delete', // alias for "trash"
+    danger: true, // menu danger style; buttons use tone "danger"
+    tone: 'danger',
     onClick: () => remove(row),
   },
 ];
 
+{/* Default: 3-dot menu */}
 <DataTable rows={rows} columns={columns} handleMenu={handleMenu} />
+
+{/* Inline colored icon buttons */}
+<DataTable
+  rows={rows}
+  columns={columns}
+  handleMenu={handleMenu}
+  actionStyle="buttons"
+/>
 ```
 
-Menu item shape: `{ label, icon?, danger?, onClick? }`.
+Menu item shape: `{ label, icon?, danger?, tone?, emphasized?, disabled?, tooltip?, onClick? }`.
+
+`icon` can be a **built-in name** (`"edit"`), an **alias** (`"delete"` → trash), or any **React node** (custom SVG / Iconify / emoji).
+
+Button tones: `"neutral"` | `"info"` | `"success"` | `"warning"` | `"danger"`, **or any CSS color** (`"red"`, `"#0369a1"`, `"rgb(...)"`). Custom colors tint the button from that value. If `tone` is omitted, buttons use `"neutral"` (or `"danger"` when `danger` is true).
+
+```jsx
+{ label: 'Edit', icon: 'edit', tone: 'info', onClick: () => edit(row) }
+{ label: 'Custom', icon: 'star', tone: '#7c3aed', onClick: () => star(row) }
+{ label: 'Alert', icon: 'alert', tone: 'orange', onClick: () => alert(row) }
+```
+
+#### Built-in icons
+
+Lucide-style outline icons (use the name as `icon: "..."`):
+
+| Name | Also | Name | Also |
+|------|------|------|------|
+| `edit` | `pencil` | `trash` | `delete`, `remove` |
+| `eye` | `view` | `eye-off` | |
+| `users` | `people`, `group` | `user` | |
+| `file` | `document`, `doc` | `copy` | `clone` |
+| `download` | | `upload` | |
+| `print` | | `search` | |
+| `settings` | `gear`, `cog` | `filter` | |
+| `plus` | `add` | `minus` | |
+| `check` | | `x` | `close`, `cancel` |
+| `refresh` | `reload`, `sync` | `link` | |
+| `external-link` | `open` | `mail` | `email` |
+| `phone` | | `calendar` | |
+| `clock` | | `lock` | |
+| `unlock` | | `star` | |
+| `bookmark` | | `archive` | |
+| `share` | | `info` | |
+| `alert` | `warning` | `ban` | |
+| `play` | | `pause` | |
+| `duplicate` | | `clipboard` | |
+| `tag` | | `image` | |
+| `grid` | | `list` | |
+| `more-horizontal` | | `more-vertical` | |
+| `send` | | `save` | |
+| `home` | | | |
+
+You can also import `ActionIcon` / `ACTION_ICON_NAMES` from the package if you need the same icons outside the table.
 
 ### HTML Column
 
@@ -518,7 +579,7 @@ See [Server mode](#server-mode-mode-server) and [Search Object](#search-object).
 
 ## Mobile behavior
 
-- **≤768px + `mobileLayout="cards"` (default):** each row becomes a labeled card; action menu and selection sit in the card header.
+- **≤768px + `mobileLayout="cards"` (default):** each row becomes a labeled card; actions (`actionStyle` menu or buttons) and selection sit in the card header.
 - **≤768px + `mobileLayout="table"`:** keeps the grid with horizontal scroll, sticky selection/first column, and compact pagination (First/Last hidden; fewer page buttons).
 - Columns with `hideOnMobile: true` are omitted on small screens in both modes.
 

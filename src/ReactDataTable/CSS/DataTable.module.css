@@ -1,5 +1,7 @@
 .userDetail {
   --table-theme-color: #4FAFA0;
+  /* Opaque mix so sticky columns still mask scrolled cells underneath */
+  --dt-row-hover-bg: color-mix(in srgb, var(--table-theme-color) 7%, #fff);
   --dt-control-height: 2.05rem;
   --dt-control-radius: 999px;
   padding: 0;
@@ -382,7 +384,7 @@
   max-width: none;
 }
 
-.tableCell > div:not(.htmlCell):not(.menuContainer):not(.customCheckbox):not(.customRadio) {
+.tableCell > div:not(.htmlCell):not(.menuContainer):not(.actionButtons):not(.customCheckbox):not(.customRadio) {
   width: 100%;
   min-width: auto;
   white-space: normal;
@@ -527,17 +529,15 @@
   height: 18px;
 }
 
-/* Whole-row hover (rows use display:contents — class applied to every cell) */
+/* Whole-row hover (rows use display:contents — class applied to every cell).
+ * Must stay opaque: sticky cells cover horizontally scrolled content. */
 .tableRow:hover .tableCell,
-.tableCell.rowHover {
-  background-color: rgba(79, 175, 160, 0.07);
-}
-
+.tableCell.rowHover,
 .tableRow:hover .stickyCol,
 .tableRow:hover .stickyColFirst,
 .stickyCol.rowHover,
 .stickyColFirst.rowHover {
-  background-color: rgba(79, 175, 160, 0.07);
+  background-color: var(--dt-row-hover-bg);
 }
 
 .theadSection .stickyCol:hover,
@@ -1066,6 +1066,7 @@
   border-radius: 6px;
   color: #374151;
   font-size: 0.875em;
+  font-weight: 400;
   line-height: 1.25;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -1133,6 +1134,191 @@
 
 .menuItem:last-child {
   border-radius: 6px;
+}
+
+/* Inline icon action buttons (actionStyle="buttons") */
+.actionButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.actionBtnWrap {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: #64748b;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease,
+    color 0.15s ease;
+}
+
+.actionBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.actionBtn:focus,
+.actionBtn:active {
+  outline: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Keyboard only — no ring on mouse click */
+.actionBtn:focus-visible {
+  outline: 2px solid var(--table-theme-color);
+  outline-offset: 2px;
+}
+
+.actionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.actionBtnIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: currentColor;
+}
+
+.actionBtnIcon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.actionBtnFallback {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: currentColor;
+}
+
+.actionBtnNeutral {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: #64748b;
+}
+
+.actionBtnNeutral:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #475569;
+}
+
+.actionBtnInfo {
+  background: rgba(3, 105, 161, 0.1);
+  border-color: rgba(3, 105, 161, 0.22);
+  color: #0369a1;
+}
+
+.actionBtnInfo:hover:not(:disabled) {
+  background: rgba(3, 105, 161, 0.16);
+  border-color: rgba(3, 105, 161, 0.35);
+  color: #075985;
+}
+
+.actionBtnSuccess {
+  background: rgba(21, 128, 61, 0.1);
+  border-color: rgba(21, 128, 61, 0.22);
+  color: #15803d;
+}
+
+.actionBtnSuccess:hover:not(:disabled) {
+  background: rgba(21, 128, 61, 0.16);
+  border-color: rgba(21, 128, 61, 0.35);
+  color: #166534;
+}
+
+.actionBtnWarning {
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.22);
+  color: #b45309;
+}
+
+.actionBtnWarning:hover:not(:disabled) {
+  background: rgba(180, 83, 9, 0.16);
+  border-color: rgba(180, 83, 9, 0.35);
+  color: #92400e;
+}
+
+.actionBtnDanger {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.22);
+  color: #dc2626;
+}
+
+.actionBtnDanger:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #b91c1c;
+}
+
+.actionBtnEmphasized.actionBtnDanger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+  box-shadow: none;
+}
+
+.actionBtnEmphasized.actionBtnDanger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Custom CSS color via tone (e.g. "red", "#0369a1") */
+.actionBtnCustom {
+  color: var(--action-btn-color);
+  background: color-mix(in srgb, var(--action-btn-color) 12%, transparent);
+  border-color: color-mix(in srgb, var(--action-btn-color) 28%, transparent);
+}
+
+.actionBtnCustom:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--action-btn-color) 18%, transparent);
+  border-color: color-mix(in srgb, var(--action-btn-color) 40%, transparent);
+}
+
+.actionBtnEmphasized.actionBtnCustom {
+  background: var(--action-btn-color);
+  border-color: var(--action-btn-color);
+  color: #fff;
+  box-shadow: none;
+}
+
+.actionBtnEmphasized.actionBtnCustom:hover:not(:disabled) {
+  filter: brightness(0.92);
+  box-shadow: none;
+  transform: none;
 }
 
 /* Responsive Design */

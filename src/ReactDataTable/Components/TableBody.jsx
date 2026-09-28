@@ -4,6 +4,7 @@ import Checkbox from "./HTML/Checkbox";
 import Radio from "./HTML/Radio";
 import NoDataIcon from "./Icons/NoDataIcon";
 import MenuDropdown from "./MenuDropdown";
+import ActionButtons from "./ActionButtons";
 import { getRowKey } from "../utils/getRowId";
 
 const TableBody = ({
@@ -21,20 +22,34 @@ const TableBody = ({
   selectBy,
   radioGroupName,
   handleMenu,
+  actionStyle = "menu",
   sanitizeHtml,
 }) => {
   const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
 
-  const renderCellContent = (col, row, actualRowIndex) => {
-    if (col.type === "action") {
-      const menuItems = handleMenu ? handleMenu(row) : [];
+  const renderRowActions = (row, actualRowIndex) => {
+    const menuItems = handleMenu ? handleMenu(row) : [];
+    if (actionStyle === "buttons") {
       return (
-        <MenuDropdown
+        <ActionButtons
           menuItems={menuItems}
           row={row}
           rowIndex={actualRowIndex}
         />
       );
+    }
+    return (
+      <MenuDropdown
+        menuItems={menuItems}
+        row={row}
+        rowIndex={actualRowIndex}
+      />
+    );
+  };
+
+  const renderCellContent = (col, row, actualRowIndex) => {
+    if (col.type === "action") {
+      return renderRowActions(row, actualRowIndex);
     }
     if (col.render && typeof col.render === "function") {
       return col.render(row, actualRowIndex);
@@ -139,13 +154,7 @@ const TableBody = ({
                 </span>
               )}
             </div>
-            {actionCol && (
-              <MenuDropdown
-                menuItems={handleMenu ? handleMenu(row) : []}
-                row={row}
-                rowIndex={actualRowIndex}
-              />
-            )}
+            {actionCol && renderRowActions(row, actualRowIndex)}
           </div>
           <div className={styles.mobileCardBody}>
             {fieldColumns
